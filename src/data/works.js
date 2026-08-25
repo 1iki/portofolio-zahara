@@ -1,0 +1,15 @@
+export const works = [
+  { title: "Konten Momen Ketika", program: "Conitycast", role: "Produser", date: "Feb–Jun 2025", platform: "TikTok/Instagram", link: null },
+  { title: "Zignal Radio", program: null, role: "Produser & Reporter", date: "21 Mei 2025", platform: "YouTube/Drive", link: "https://youtu.be/wli8GlJ3dRE?si=BpkcVH1lEAy2bKaL" },
+  { title: "Liputan Weekinshop", program: null, role: "Reporter", date: "01 Mei 2025", platform: "Drive", link: "https://drive.google.com/file/d/19zXuwa-SE-4UKVopJcE3jmkdyX2REpfJ/view" },
+  { title: "News Broadcast", program: null, role: "Penulis Naskah & Reporter", date: "21 April 2025", platform: "YouTube", link: "https://www.youtube.com/live/tAUPgJXZqD4" },
+  { title: "Fun With Zahara", program: null, role: "Penulis Naskah & Host", date: "13 April 2025", platform: "Drive", link: "https://drive.google.com/file/d/1JDBrTFbEQX4jsq2IMn_2jvPOrLPtdXa/view" },
+  { title: "Journey With Mine", program: null, role: "Produser", date: "19 Desember 2024", platform: "YouTube", link: "https://youtu.be/x-vjHGCpDX0" },
+  { title: "Kreasi Bersama Zahara", program: "KREIZA", role: "Produser & Host", date: "16 November 2024", platform: "YouTube", link: "https://youtu.be/aivl_zZ9kkU" },
+  { title: "Geniverze", program: null, role: "Penulis Naskah", date: "28 Desember 2023", platform: "YouTube", link: "https://www.youtube.com/live/cVvpvsd_M8Q" },
+  { title: "Craftopia", program: null, role: "Produser Kreatif", date: "Mar–Mei 2025", platform: "YouTube", link: "https://youtu.be/jUBs0-Of9qY" },
+  { title: "Polimedia Explore", program: "Softnews", role: "Produser", date: "Sep–Des 2024", platform: "YouTube", link: "https://youtu.be/EGW31Ed-HkA" },
+  { title: "Hardnews", program: null, role: "Reporter", date: "Mar–Sep 2024", platform: "Instagram/YouTube", link: null },
+  { title: 'MV Cover "Andaikan Kau Datang Kembali"', program: null, role: "Asisten Produser", date: "20 November 2023", platform: "YouTube", link: "https://youtu.be/oiZKzxgnuxs" },
+  { title: 'Short Movie "Falshback"', program: null, role: "Sutradara", date: "17 Mei 2023", platform: "YouTube", link: "https://youtu.be/38JSl2qdAvM" },
+];

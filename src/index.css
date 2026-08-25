@@ -1,0 +1,113 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600..900;1,9..144,600..900&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-navy-base: #0B1D3A;
+  --color-navy-deep: #071429;
+  --color-blue-accent: #4A7FE8;
+  --color-ivory: #F5F3EC;
+  --color-onair-red: #E8442C;
+  --color-ink: #101418;
+  --color-muted: #8FA0C2;
+  --color-divider: rgba(245,243,236,0.12);
+  --color-scanline: rgba(74,127,232,0.04);
+  
+  --font-display: 'Fraunces', serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+}
+
+@layer base {
+  body {
+    @apply bg-navy-base text-ivory font-body antialiased selection:bg-blue-accent/30 overflow-x-hidden;
+  }
+  
+  /* Focus styles for accessibility */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-blue-accent ring-offset-2 ring-offset-navy-base;
+  }
+}
+
+/* Utilities for the CRT/Console effect */
+@layer utilities {
+  .console-border {
+    @apply border border-divider rounded-[4px];
+  }
+  .console-btn {
+    @apply flex items-center justify-center gap-2 px-4 py-2 text-sm font-mono uppercase tracking-wider transition-all duration-200 border border-divider rounded-[4px] hover:border-blue-accent/50 hover:bg-blue-accent/10;
+  }
+  .console-btn-active {
+    @apply border-blue-accent bg-blue-accent/20 text-blue-accent shadow-[0_0_15px_rgba(74,127,232,0.3)];
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Hero power-on & ambient animations */
+@keyframes heroGlow {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes borderTrace {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 200% 0%; }
+}
+
+@keyframes textFlicker {
+  0%, 97%, 100% { opacity: 1; }
+  98% { opacity: 0.85; }
+  99% { opacity: 0.95; }
+}
+
+@keyframes signalBars {
+  0% { transform: scaleY(0.3); }
+  25% { transform: scaleY(1); }
+  50% { transform: scaleY(0.6); }
+  75% { transform: scaleY(0.9); }
+  100% { transform: scaleY(0.3); }
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.hero-glow {
+  animation: heroGlow 3s ease-in-out infinite;
+}
+
+.border-trace {
+  background: linear-gradient(90deg, transparent, var(--color-blue-accent), transparent);
+  background-size: 200% 100%;
+  animation: borderTrace 4s linear infinite;
+}
+
+.text-flicker {
+  animation: textFlicker 5s step-end infinite;
+}
+
+.signal-bar {
+  animation: signalBars 2s ease-in-out infinite;
+}
+
+.gradient-shift {
+  background-size: 200% 200%;
+  animation: gradientShift 8s ease infinite;
+}
+
+/* Mobile menu animation */
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-down {
+  animation: slideDown 0.2s ease-out;
+}
