@@ -14,16 +14,6 @@ export default function Hero() {
     { text: "Social Media Specialist", icon: Radio }
   ];
   const [taglineIndex, setTaglineIndex] = useState(0);
-  const [isPowerOn, setIsPowerOn] = useState(prefersReducedMotion);
-  const [showContent, setShowContent] = useState(prefersReducedMotion);
-
-  useEffect(() => {
-    if (!prefersReducedMotion) {
-      const timer1 = setTimeout(() => setIsPowerOn(true), 400);
-      const timer2 = setTimeout(() => setShowContent(true), 900);
-      return () => { clearTimeout(timer1); clearTimeout(timer2); };
-    }
-  }, [prefersReducedMotion]);
 
   // Auto-rotate taglines
   useEffect(() => {
@@ -47,13 +37,17 @@ export default function Hero() {
     hidden: { opacity: 0 },
     visible: { 
       opacity: 1,
-      transition: { staggerChildren: 0.12, delayChildren: 0.1 }
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 }
     }
   };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } }
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } 
+    }
   };
 
   const CurrentIcon = taglines[taglineIndex].icon;
@@ -111,24 +105,21 @@ export default function Hero() {
           className="lg:col-span-7 flex flex-col gap-8"
           variants={containerVariants}
           initial={prefersReducedMotion ? "visible" : "hidden"}
-          animate={showContent ? "visible" : "hidden"}
+          animate="visible"
         >
           {/* Power-On Status Bar */}
           <motion.div variants={itemVariants} className="flex items-center gap-4">
             {/* Indicator Lights */}
             <div className="flex gap-1.5">
               {[1, 2, 3, 4, 5].map((i) => (
-                <motion.div 
+                <div 
                   key={i} 
-                  initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, scale: 0 }}
-                  animate={isPowerOn ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0 }}
-                  transition={{ duration: 0.3, delay: isPowerOn ? i * 0.12 : 0 }}
                   className={`w-2 h-2 rounded-full ${
                     i === 1 ? 'bg-onair-red shadow-[0_0_8px_rgba(232,68,44,0.8)]' : 
                     i <= 3 ? 'bg-blue-accent shadow-[0_0_6px_rgba(74,127,232,0.5)]' : 
                     'bg-muted/40'
                   }`}
-                ></motion.div>
+                ></div>
               ))}
             </div>
             <div className="h-[1px] flex-1 bg-divider"></div>
@@ -204,13 +195,13 @@ export default function Hero() {
             </button>
 
             <div className="flex items-center gap-3">
-              <a href="#" className="px-4 py-2.5 rounded-full border border-divider text-xs font-mono tracking-wide text-muted hover:text-ivory hover:border-ivory/30 transition-colors">
+              <a href="https://wa.me/" target="_blank" rel="noopener noreferrer" className="px-4 py-2.5 rounded-full border border-divider text-xs font-mono tracking-wide text-muted hover:text-ivory hover:border-ivory/30 transition-colors">
                 WA
               </a>
-              <a href="#" className="px-4 py-2.5 rounded-full border border-divider text-xs font-mono tracking-wide text-muted hover:text-ivory hover:border-ivory/30 transition-colors">
+              <a href="https://instagram.com/" target="_blank" rel="noopener noreferrer" className="px-4 py-2.5 rounded-full border border-divider text-xs font-mono tracking-wide text-muted hover:text-ivory hover:border-ivory/30 transition-colors">
                 IG
               </a>
-              <a href="#" className="px-4 py-2.5 rounded-full border border-divider text-xs font-mono tracking-wide text-muted hover:text-ivory hover:border-ivory/30 transition-colors">
+              <a href="mailto:zahara@example.com" className="px-4 py-2.5 rounded-full border border-divider text-xs font-mono tracking-wide text-muted hover:text-ivory hover:border-ivory/30 transition-colors">
                 EMAIL
               </a>
             </div>
@@ -235,8 +226,8 @@ export default function Hero() {
         <motion.div 
           className="lg:col-span-5 relative"
           initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, scale: 0.95 }}
-          animate={isPowerOn ? { opacity: 1, scale: 1 } : {}}
-          transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
         >
           {/* Glow behind monitor */}
           <div className="absolute -inset-8 rounded-full opacity-20 blur-3xl pointer-events-none"
@@ -279,33 +270,18 @@ export default function Hero() {
                <div className="absolute inset-0 bg-gradient-to-t from-navy-deep via-transparent to-navy-deep/30 pointer-events-none"></div>
                
                {/* REC indicator */}
-               <motion.div 
-                 className="absolute top-4 right-4 flex items-center gap-1.5 z-10"
-                 initial={{ opacity: 0 }}
-                 animate={isPowerOn ? { opacity: 1 } : {}}
-                 transition={{ delay: 1.2 }}
-               >
+               <div className="absolute top-4 right-4 flex items-center gap-1.5 z-10">
                   <div className="w-2 h-2 rounded-full bg-onair-red animate-pulse shadow-[0_0_6px_rgba(232,68,44,0.8)]"></div>
                   <span className="text-[10px] font-mono text-onair-red font-medium tracking-widest">REC</span>
-               </motion.div>
+               </div>
 
                {/* Timecode overlay */}
-               <motion.div 
-                 className="absolute top-4 left-4 z-10"
-                 initial={{ opacity: 0 }}
-                 animate={isPowerOn ? { opacity: 0.7 } : {}}
-                 transition={{ delay: 1.4 }}
-               >
+               <div className="absolute top-4 left-4 z-10">
                  <span className="text-[10px] font-mono text-ivory/60 tracking-wider">00:00:01:12</span>
-               </motion.div>
+               </div>
 
                {/* Bottom info bar overlay */}
-               <motion.div 
-                 className="absolute bottom-0 left-0 right-0 p-4 z-10 bg-gradient-to-t from-navy-deep/90 to-transparent"
-                 initial={{ opacity: 0, y: 10 }}
-                 animate={isPowerOn ? { opacity: 1, y: 0 } : {}}
-                 transition={{ delay: 1 }}
-               >
+               <div className="absolute bottom-0 left-0 right-0 p-4 z-10 bg-gradient-to-t from-navy-deep/90 to-transparent">
                  <div className="flex items-center justify-between">
                    <div className="flex flex-col gap-0.5">
                      <span className="text-[10px] font-mono text-muted uppercase tracking-wider">Output</span>
@@ -331,7 +307,7 @@ export default function Hero() {
                      ))}
                    </div>
                  </div>
-               </motion.div>
+               </div>
             </div>
           </div>
 
@@ -339,8 +315,8 @@ export default function Hero() {
           <motion.div 
             className="absolute -bottom-4 -left-4 lg:-left-8 bg-navy-deep border border-divider rounded-sm px-4 py-3 shadow-xl z-20"
             initial={prefersReducedMotion ? {} : { opacity: 0, x: -20 }}
-            animate={showContent ? { opacity: 1, x: 0 } : {}}
-            transition={{ delay: 1.5, duration: 0.5 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
           >
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-blue-accent/20 flex items-center justify-center">
@@ -360,8 +336,8 @@ export default function Hero() {
       <motion.div 
         className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-muted z-20"
         initial={{ opacity: 0 }}
-        animate={{ opacity: isPowerOn ? 0.6 : 0 }}
-        transition={{ delay: 2 }}
+        animate={{ opacity: 0.6 }}
+        transition={{ delay: 0.8 }}
       >
         <span className="text-[10px] font-mono uppercase tracking-[0.3em]">Scroll</span>
         <motion.div
