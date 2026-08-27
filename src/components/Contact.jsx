@@ -1,4 +1,5 @@
 import React from 'react';
+import { contact } from '../data/contact';
 
 export default function Contact() {
   return (
@@ -21,13 +22,13 @@ export default function Contact() {
         </div>
 
         <div className="flex flex-wrap justify-center gap-4">
-          <a href="#" className="px-6 py-3 rounded-full border border-divider hover:border-ivory text-sm font-mono tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-accent focus-visible:ring-offset-2 focus-visible:ring-offset-navy-base">
+          <a href={contact.whatsapp} target="_blank" rel="noopener noreferrer" className="px-6 py-3 rounded-full border border-divider hover:border-ivory text-sm font-mono tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-accent focus-visible:ring-offset-2 focus-visible:ring-offset-navy-base">
             WHATSAPP
           </a>
-          <a href="#" className="px-6 py-3 rounded-full border border-divider hover:border-ivory text-sm font-mono tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-accent focus-visible:ring-offset-2 focus-visible:ring-offset-navy-base">
+          <a href={contact.instagram} target="_blank" rel="noopener noreferrer" className="px-6 py-3 rounded-full border border-divider hover:border-ivory text-sm font-mono tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-accent focus-visible:ring-offset-2 focus-visible:ring-offset-navy-base">
             INSTAGRAM
           </a>
-          <a href="#" className="px-6 py-3 rounded-full border border-divider hover:border-ivory text-sm font-mono tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-accent focus-visible:ring-offset-2 focus-visible:ring-offset-navy-base">
+          <a href={`mailto:${contact.email}`} className="px-6 py-3 rounded-full border border-divider hover:border-ivory text-sm font-mono tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-accent focus-visible:ring-offset-2 focus-visible:ring-offset-navy-base">
             EMAIL
           </a>
         </div>

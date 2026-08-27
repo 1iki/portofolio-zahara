@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 1280" width="720" height="1280">
+  <defs>
+    <linearGradient id="bgGradVert" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0B1D3A" />
+      <stop offset="50%" stop-color="#071429" />
+      <stop offset="100%" stop-color="#101418" />
+    </linearGradient>
+    <radialGradient id="glowVert" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#4A7FE8" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#071429" stop-opacity="0" />
+    </radialGradient>
+    <pattern id="gridVert" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#F5F3EC" stroke-opacity="0.04" stroke-width="1" />
+    </pattern>
+    <pattern id="scanlineVert" width="100" height="4" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="100" y2="0" stroke="#000000" stroke-opacity="0.2" stroke-width="2" />
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="720" height="1280" fill="url(#bgGradVert)" />
+  <rect width="720" height="1280" fill="url(#gridVert)" />
+  <circle cx="360" cy="500" r="450" fill="url(#glowVert)" />
+
+  <!-- Frame Border -->
+  <rect x="30" y="30" width="660" height="1220" rx="8" fill="none" stroke="rgba(245,243,236,0.15)" stroke-width="2" />
+
+  <!-- Camera HUD Corners -->
+  <path d="M 50 80 L 50 50 L 80 50" stroke="#4A7FE8" stroke-width="3" fill="none" />
+  <path d="M 670 80 L 670 50 L 640 50" stroke="#4A7FE8" stroke-width="3" fill="none" />
+  <path d="M 50 1200 L 50 1230 L 80 1230" stroke="#4A7FE8" stroke-width="3" fill="none" />
+  <path d="M 670 1200 L 670 1230 L 640 1230" stroke="#4A7FE8" stroke-width="3" fill="none" />
+
+  <!-- Header HUD -->
+  <rect x="60" y="70" width="600" height="50" rx="4" fill="#071429" stroke="rgba(245,243,236,0.1)" stroke-width="1" />
+  <circle cx="90" cy="95" r="7" fill="#E8442C" />
+  <text x="110" y="100" fill="#E8442C" font-family="monospace" font-size="14" font-weight="bold" letter-spacing="2">REC 9:16 PORTRAIT</text>
+  <text x="630" y="100" fill="#8FA0C2" font-family="monospace" font-size="14" text-anchor="end" letter-spacing="1">00:01:02:24</text>
+
+  <!-- Center Card Frame -->
+  <g transform="translate(360, 600)">
+    <!-- Video Player Frame Icon -->
+    <rect x="-220" y="-200" width="440" height="400" rx="12" fill="#071429" stroke="#4A7FE8" stroke-width="2" opacity="0.9" />
+    
+    <!-- Play Icon Triangles -->
+    <polygon points="-30,-50 40,0 -30,50" fill="#4A7FE8" opacity="0.9" />
+    
+    <text x="0" y="120" fill="#F5F3EC" font-family="sans-serif" font-size="30" font-weight="bold" text-anchor="middle" letter-spacing="1">LIPUTAN WEEKINSHOP</text>
+    <text x="0" y="155" fill="#4A7FE8" font-family="monospace" font-size="16" font-weight="600" text-anchor="middle" letter-spacing="2">REPORTER • 01 MEI 2025</text>
+    <text x="0" y="180" fill="#8FA0C2" font-family="monospace" font-size="13" text-anchor="middle" letter-spacing="1">GOOGLE DRIVE VERTICAL VIDEO</text>
+  </g>
+
+  <!-- Footer HUD -->
+  <rect x="60" y="1160" width="600" height="45" rx="4" fill="#071429" stroke="rgba(245,243,236,0.1)" stroke-width="1" />
+  <text x="90" y="1187" fill="#8FA0C2" font-family="monospace" font-size="13" letter-spacing="1">FORMAT: 1080 x 1920 VERTICAL</text>
+  <text x="630" y="1187" fill="#F5F3EC" font-family="monospace" font-size="13" text-anchor="end" letter-spacing="1">POLIMEDIA TV</text>
+
+  <!-- CRT Scanlines -->
+  <rect width="720" height="1280" fill="url(#scanlineVert)" pointer-events="none" />
+</svg>

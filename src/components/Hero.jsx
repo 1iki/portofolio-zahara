@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { useSound } from '../context/SoundContext';
+import { contact } from '../data/contact';
 import { ChevronDown, RefreshCw, Radio, Tv, Mic2, PenTool } from 'lucide-react';
 
 export default function Hero() {
@@ -194,13 +195,13 @@ export default function Hero() {
             </button>
 
             <div className="flex items-center gap-3">
-              <a href="https://wa.me/" target="_blank" rel="noopener noreferrer" className="px-4 py-2.5 rounded-full border border-divider text-xs font-mono tracking-wide text-muted hover:text-ivory hover:border-ivory/30 transition-colors">
+              <a href={contact.whatsapp} target="_blank" rel="noopener noreferrer" className="px-4 py-2.5 rounded-full border border-divider text-xs font-mono tracking-wide text-muted hover:text-ivory hover:border-ivory/30 transition-colors">
                 WA
               </a>
-              <a href="https://instagram.com/" target="_blank" rel="noopener noreferrer" className="px-4 py-2.5 rounded-full border border-divider text-xs font-mono tracking-wide text-muted hover:text-ivory hover:border-ivory/30 transition-colors">
+              <a href={contact.instagram} target="_blank" rel="noopener noreferrer" className="px-4 py-2.5 rounded-full border border-divider text-xs font-mono tracking-wide text-muted hover:text-ivory hover:border-ivory/30 transition-colors">
                 IG
               </a>
-              <a href="mailto:zahara@example.com" className="px-4 py-2.5 rounded-full border border-divider text-xs font-mono tracking-wide text-muted hover:text-ivory hover:border-ivory/30 transition-colors">
+              <a href={`mailto:${contact.email}`} className="px-4 py-2.5 rounded-full border border-divider text-xs font-mono tracking-wide text-muted hover:text-ivory hover:border-ivory/30 transition-colors">
                 EMAIL
               </a>
             </div>

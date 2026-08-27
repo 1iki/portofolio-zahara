@@ -11,13 +11,13 @@ export default function About() {
       // },
       // {
       title: "Karya Perdana Angkatan 12 Terfavorit",
-      detail: "Politeknik Negeri Media Kreatif",
-      date: "2024",
+      detail: "Broadcast Award 2023 — Asisten Produser",
+      date: "20 November 2023",
     },
     {
       title: "Juara 3 Fotografi",
-      detail: "Kompetisi Fotografi Mahasiswa",
-      date: "2023",
+      detail: "Atma Jaya Communication Week 2023",
+      date: "29 Mei 2023",
     }
   ];
 

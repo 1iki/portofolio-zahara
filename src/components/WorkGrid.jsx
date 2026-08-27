@@ -2,23 +2,43 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { works } from '../data/works';
 import WorkCard from './WorkCard';
+import VideoModal from './VideoModal';
+import ProjectInfoModal from './ProjectInfoModal';
 import { useSound } from '../context/SoundContext';
 import { cn } from '../lib/utils';
 
 export default function WorkGrid() {
   const [activeFilter, setActiveFilter] = useState('Semua');
+  const [selectedVideo, setSelectedVideo] = useState(null);
+  const [selectedInfo, setSelectedInfo] = useState(null);
   const { playClick } = useSound();
 
-  const filters = ['Semua', 'Produser', 'Penulis Naskah', 'Reporter', 'Host'];
+  const filters = ['Semua', 'Produser', 'Penulis Naskah', 'Reporter', 'Host', 'Creative'];
+
+  // Roles that fall under the "Creative" umbrella filter
+  const creativeRoles = ['Creative Support', 'Clipper', 'Script Continuity', 'Talent Coordinator', 'Asisten Script', 'Asisten Produser', 'Sutradara', 'Content Creator'];
 
   const filteredWorks = works.filter((work) => {
     if (activeFilter === 'Semua') return true;
+    if (activeFilter === 'Creative') {
+      return creativeRoles.some((cr) => work.role.includes(cr));
+    }
     return work.role.includes(activeFilter);
   });
 
   const handleFilterClick = (filter) => {
     playClick();
     setActiveFilter(filter);
+  };
+
+  const handleOpenVideo = (videoWork) => {
+    setSelectedInfo(null);
+    setSelectedVideo(videoWork);
+  };
+
+  const handleOpenInfo = (infoWork) => {
+    setSelectedVideo(null);
+    setSelectedInfo(infoWork);
   };
 
   return (
@@ -58,7 +78,12 @@ export default function WorkGrid() {
         <AnimatePresence mode="popLayout">
           {filteredWorks.length > 0 ? (
             filteredWorks.map((work, idx) => (
-              <WorkCard key={`${work.title}-${idx}`} work={work} />
+              <WorkCard 
+                key={`${work.id || work.title}-${idx}`} 
+                work={work} 
+                onSelectVideo={handleOpenVideo}
+                onSelectInfo={handleOpenInfo}
+              />
             ))
           ) : (
             <motion.div 
@@ -80,6 +105,23 @@ export default function WorkGrid() {
           )}
         </AnimatePresence>
       </motion.div>
+
+      {/* Video Modal */}
+      {selectedVideo && (
+        <VideoModal 
+          work={selectedVideo} 
+          onClose={() => setSelectedVideo(null)} 
+        />
+      )}
+
+      {/* Information Modal */}
+      {selectedInfo && (
+        <ProjectInfoModal 
+          work={selectedInfo} 
+          onClose={() => setSelectedInfo(null)}
+          onWatchVideo={handleOpenVideo}
+        />
+      )}
 
     </section>
   );

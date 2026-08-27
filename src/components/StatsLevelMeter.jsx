@@ -1,11 +1,10 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { motion, useInView, animate } from 'motion/react';
 import { useReducedMotion } from '../hooks/useReducedMotion';
-import { cn } from '../lib/utils';
 
 function StatBar({ label, targetValue, suffix = '', delay }) {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const isInView = useInView(ref, { once: true, margin: "-50px" });
   const [displayValue, setDisplayValue] = useState(0);
   const prefersReducedMotion = useReducedMotion();
 
@@ -28,36 +27,45 @@ function StatBar({ label, targetValue, suffix = '', delay }) {
     }
   }, [isInView, targetValue, prefersReducedMotion, delay]);
 
-  // Height percentage calculation based on some arbitrary max values to make the bars look staggered
-  // This simulates a VU meter look.
-  const heightPercent = prefersReducedMotion 
-    ? 100 
-    : (isInView ? 100 : 0);
+  // Calculate proportional meter fill height
+  const calcHeightPercent = () => {
+    if (targetValue > 1000) return (targetValue / 2500) * 100;
+    if (targetValue > 200) return (targetValue / 500) * 100;
+    return (targetValue / 150) * 100;
+  };
+
+  const fillHeight = Math.max(calcHeightPercent(), 15);
 
   return (
-    <div ref={ref} className="flex flex-col items-center gap-4 flex-1 min-w-[120px]">
-      <div className="flex flex-col items-center gap-1">
-        <span className="font-display text-4xl text-ivory">
+    <div ref={ref} className="w-full flex flex-col items-center gap-3 sm:gap-4 min-w-0">
+      {/* Metric Number & Label */}
+      <div className="flex flex-col items-center gap-1 w-full text-center">
+        <span className="font-display text-3xl sm:text-4xl md:text-5xl text-ivory tracking-tight leading-none">
           {displayValue.toLocaleString('id-ID')}{suffix}
         </span>
-        <span className="font-mono text-[10px] uppercase tracking-wider text-muted text-center h-8">
+        <span className="font-mono text-[10px] sm:text-xs uppercase tracking-wider text-muted/80 text-center min-h-[2.25rem] flex items-center justify-center leading-tight max-w-[140px]">
           {label}
         </span>
       </div>
       
       {/* Level Meter Bar - Vertical */}
-      <div className="h-48 w-8 bg-navy-deep border border-divider rounded-sm relative overflow-hidden flex items-end justify-center pb-1">
-        {/* segmented look */}
-        <div className="absolute inset-0 z-10" style={{ backgroundImage: 'linear-gradient(transparent 80%, rgba(7, 20, 41, 1) 80%)', backgroundSize: '100% 4px' }}></div>
+      <div className="h-32 sm:h-40 md:h-48 w-7 sm:w-8 bg-navy-deep border border-divider rounded-sm relative overflow-hidden flex items-end justify-center pb-1 shadow-inner">
+        {/* CRT segmented scanline pattern */}
+        <div 
+          className="absolute inset-0 z-10 pointer-events-none" 
+          style={{ 
+            backgroundImage: 'linear-gradient(transparent 80%, rgba(7, 20, 41, 1) 80%)', 
+            backgroundSize: '100% 4px' 
+          }}
+        ></div>
         
         <motion.div 
           className="w-full bg-blue-accent bottom-0 absolute shadow-[0_0_15px_rgba(74,127,232,0.6)]"
-          initial={prefersReducedMotion ? { height: '100%' } : { height: '0%' }}
-          animate={isInView ? { height: `${(targetValue / (targetValue > 1000 ? 2500 : 500)) * 100}%` } : { height: '0%' }}
+          initial={prefersReducedMotion ? { height: `${fillHeight}%` } : { height: '0%' }}
+          animate={isInView ? { height: `${fillHeight}%` } : { height: '0%' }}
           transition={{ duration: 1.2, delay, ease: "easeOut" }}
           style={{ 
-             // Minimum height to look good
-             minHeight: isInView ? '20%' : '0%'
+             minHeight: isInView || prefersReducedMotion ? '12%' : '0%'
           }}
         ></motion.div>
       </div>
@@ -67,15 +75,15 @@ function StatBar({ label, targetValue, suffix = '', delay }) {
 
 export default function StatsLevelMeter() {
   const stats = [
-    { label: "Konten Diproduksi", value: 109, suffix: "+" }, // 85+9+15 based on prompt hint
+    { label: "Konten Diproduksi", value: 109, suffix: "+" },
     { label: "Reels Views", value: 2081, suffix: "" },
     { label: "YouTube Views", value: 388, suffix: "" },
     { label: "Program Ditangani", value: 12, suffix: "" }
   ];
 
   return (
-    <section className="py-24 border-t border-divider bg-navy-base px-6">
-      <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-end justify-center gap-8 md:gap-12">
+    <section className="py-16 sm:py-20 md:py-24 border-t border-divider bg-navy-base px-4 sm:px-6">
+      <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 md:gap-12 items-end justify-items-center">
         {stats.map((stat, idx) => (
           <StatBar 
             key={idx} 

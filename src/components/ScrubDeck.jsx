@@ -2,14 +2,19 @@ import React, { useEffect } from 'react';
 import { Play } from 'lucide-react';
 import { usePointerType } from '../hooks/usePointerType';
 
-export default function ScrubDeck({ isActive, progress, onScrub }) {
+export default function ScrubDeck({ isActive, progress, onScrub, hasPreview = true }) {
   const isCoarse = usePointerType();
 
   useEffect(() => {
-    if (isActive && !isCoarse) {
+    if (isActive && !isCoarse && hasPreview) {
       onScrub(progress);
     }
-  }, [isActive, isCoarse, progress, onScrub]);
+  }, [isActive, isCoarse, progress, onScrub, hasPreview]);
+
+  // Do not render fake scrubbing controls or fake timelines if media doesn't support frame scrubbing
+  if (!hasPreview) {
+    return null;
+  }
 
   if (isCoarse) {
     return (
@@ -30,7 +35,7 @@ export default function ScrubDeck({ isActive, progress, onScrub }) {
         ></div>
       </div>
       <div className="flex justify-between mt-2 font-mono text-[9px] text-ivory">
-        <span>PREVIEW</span>
+        <span>PREVIEW SCRUB</span>
         <span>{Math.floor(progress)}%</span>
       </div>
     </div>
