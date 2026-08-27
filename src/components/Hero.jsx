@@ -7,7 +7,7 @@ import { ChevronDown, RefreshCw, Radio, Tv, Mic2, PenTool } from 'lucide-react';
 export default function Hero() {
   const prefersReducedMotion = useReducedMotion();
   const { playClick } = useSound();
-  
+
   const taglines = [
     { text: "Produser", icon: Tv },
     { text: "Penulis Naskah", icon: PenTool },
@@ -35,7 +35,7 @@ export default function Hero() {
 
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: { 
+    visible: {
       opacity: 1,
       transition: { staggerChildren: 0.1, delayChildren: 0.1 }
     }
@@ -43,10 +43,10 @@ export default function Hero() {
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0, 
-      transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } 
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
     }
   };
 
@@ -54,12 +54,12 @@ export default function Hero() {
 
   return (
     <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-navy-base">
-      
+
       {/* ===== BACKGROUND LAYERS ===== */}
-      
+
       {/* Radial gradient glow behind content */}
       <div className="absolute inset-0 pointer-events-none">
-        <div 
+        <div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vw] h-[120vh] opacity-30"
           style={{
             background: 'radial-gradient(ellipse at center, rgba(74,127,232,0.15) 0%, rgba(11,29,58,0) 70%)',
@@ -76,21 +76,21 @@ export default function Hero() {
       ></div>
 
       {/* Animated gradient orbs */}
-      <motion.div 
+      <motion.div
         className="absolute top-[10%] right-[15%] w-[400px] h-[400px] rounded-full pointer-events-none opacity-20 blur-3xl"
         style={{ background: 'radial-gradient(circle, rgba(74,127,232,0.4) 0%, transparent 70%)' }}
-        animate={prefersReducedMotion ? {} : { 
-          x: [0, 30, -20, 0], 
+        animate={prefersReducedMotion ? {} : {
+          x: [0, 30, -20, 0],
           y: [0, -20, 30, 0],
           scale: [1, 1.1, 0.9, 1]
         }}
         transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
       />
-      <motion.div 
+      <motion.div
         className="absolute bottom-[10%] left-[10%] w-[300px] h-[300px] rounded-full pointer-events-none opacity-15 blur-3xl"
         style={{ background: 'radial-gradient(circle, rgba(232,68,44,0.3) 0%, transparent 70%)' }}
-        animate={prefersReducedMotion ? {} : { 
-          x: [0, -20, 30, 0], 
+        animate={prefersReducedMotion ? {} : {
+          x: [0, -20, 30, 0],
           y: [0, 30, -20, 0],
           scale: [1, 0.9, 1.1, 1]
         }}
@@ -99,9 +99,9 @@ export default function Hero() {
 
       {/* ===== MAIN CONTENT ===== */}
       <div className="max-w-7xl w-full mx-auto px-6 relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center pt-28 pb-24 lg:pt-32 lg:pb-32">
-        
+
         {/* ===== LEFT SIDE: Console Panel ===== */}
-        <motion.div 
+        <motion.div
           className="lg:col-span-7 flex flex-col gap-8"
           variants={containerVariants}
           initial={prefersReducedMotion ? "visible" : "hidden"}
@@ -112,13 +112,12 @@ export default function Hero() {
             {/* Indicator Lights */}
             <div className="flex gap-1.5">
               {[1, 2, 3, 4, 5].map((i) => (
-                <div 
-                  key={i} 
-                  className={`w-2 h-2 rounded-full ${
-                    i === 1 ? 'bg-onair-red shadow-[0_0_8px_rgba(232,68,44,0.8)]' : 
-                    i <= 3 ? 'bg-blue-accent shadow-[0_0_6px_rgba(74,127,232,0.5)]' : 
-                    'bg-muted/40'
-                  }`}
+                <div
+                  key={i}
+                  className={`w-2 h-2 rounded-full ${i === 1 ? 'bg-onair-red shadow-[0_0_8px_rgba(232,68,44,0.8)]' :
+                      i <= 3 ? 'bg-blue-accent shadow-[0_0_6px_rgba(74,127,232,0.5)]' :
+                        'bg-muted/40'
+                    }`}
                 ></div>
               ))}
             </div>
@@ -147,7 +146,7 @@ export default function Hero() {
           {/* Interactive Tagline Knob */}
           <motion.div variants={itemVariants}>
             <div className="flex items-center gap-4 bg-navy-deep/80 backdrop-blur-sm p-4 rounded-sm border border-divider w-fit group">
-              <button 
+              <button
                 onClick={handleKnobClick}
                 className="w-12 h-12 rounded-full bg-navy-base border-2 border-divider flex items-center justify-center hover:border-blue-accent transition-all duration-300 group/knob cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-accent focus-visible:ring-offset-2 focus-visible:ring-offset-navy-deep relative overflow-hidden"
                 aria-label="Ganti Role"
@@ -166,7 +165,7 @@ export default function Hero() {
                   <span className="w-1 h-1 rounded-full bg-blue-accent hero-glow"></span>
                 </span>
                 <AnimatePresence mode="wait">
-                  <motion.span 
+                  <motion.span
                     key={taglineIndex}
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -184,7 +183,7 @@ export default function Hero() {
 
           {/* CTA + Contact Pills */}
           <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-start gap-4 mt-2">
-            <button 
+            <button
               onClick={handleScrollToKarya}
               className="relative console-btn text-sm px-8 py-4 border-blue-accent bg-blue-accent/15 text-blue-accent hover:bg-blue-accent hover:text-navy-deep transition-all duration-300 group/cta overflow-hidden cursor-pointer"
             >
@@ -211,7 +210,7 @@ export default function Hero() {
           <motion.div variants={itemVariants} className="flex items-center gap-6 mt-4 pt-6 border-t border-divider">
             {[
               { num: "13+", label: "Projects" },
-              { num: "3.74", label: "IPK" },
+              // { num: "3.74", label: "IPK" },
               { num: "2K+", label: "Views" }
             ].map((stat, idx) => (
               <div key={idx} className="flex flex-col">
@@ -223,7 +222,7 @@ export default function Hero() {
         </motion.div>
 
         {/* ===== RIGHT SIDE: Profile Monitor ===== */}
-        <motion.div 
+        <motion.div
           className="lg:col-span-5 relative"
           initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -239,80 +238,80 @@ export default function Hero() {
             <div className="absolute inset-0 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
               style={{ boxShadow: '0 0 30px rgba(74,127,232,0.15), inset 0 0 30px rgba(74,127,232,0.05)' }}
             ></div>
-            
+
             {/* Monitor corner markers */}
             <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-blue-accent/30 rounded-tl-sm"></div>
             <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-blue-accent/30 rounded-tr-sm"></div>
             <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-blue-accent/30 rounded-bl-sm"></div>
             <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-blue-accent/30 rounded-br-sm"></div>
-            
+
             <div className="w-full h-full relative bg-ink rounded-sm overflow-hidden flex items-center justify-center border border-divider/30">
-               {/* Diagonal pattern fallback */}
-               <div className="absolute inset-0 opacity-10" style={{ background: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(245, 243, 236, 0.05) 10px, rgba(245, 243, 236, 0.05) 20px)' }}></div>
-               
-               <img 
-                 src="/profile-zahara.png" 
-                 alt="Zahara Elhusna Barok" 
-                 className="object-cover w-full h-full object-top opacity-90 group-hover:opacity-100 transition-all duration-700"
-                 onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
-                 }}
-               />
-               {/* Displayed if image fails to load */}
-               <div className="hidden absolute inset-0 flex-col items-center justify-center text-muted gap-2">
-                 <Tv size={32} className="opacity-30" />
-                 <span className="font-mono text-xs tracking-widest">[NO SIGNAL]</span>
-                 <span className="text-[10px] font-mono">Insert profile photo</span>
-               </div>
+              {/* Diagonal pattern fallback */}
+              <div className="absolute inset-0 opacity-10" style={{ background: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(245, 243, 236, 0.05) 10px, rgba(245, 243, 236, 0.05) 20px)' }}></div>
 
-               {/* Cinematic gradient overlay on image */}
-               <div className="absolute inset-0 bg-gradient-to-t from-navy-deep via-transparent to-navy-deep/30 pointer-events-none"></div>
-               
-               {/* REC indicator */}
-               <div className="absolute top-4 right-4 flex items-center gap-1.5 z-10">
-                  <div className="w-2 h-2 rounded-full bg-onair-red animate-pulse shadow-[0_0_6px_rgba(232,68,44,0.8)]"></div>
-                  <span className="text-[10px] font-mono text-onair-red font-medium tracking-widest">REC</span>
-               </div>
+              <img
+                src="/profile-zahara.png"
+                alt="Zahara Elhusna Barok"
+                className="object-cover w-full h-full object-top opacity-90 group-hover:opacity-100 transition-all duration-700"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'flex';
+                }}
+              />
+              {/* Displayed if image fails to load */}
+              <div className="hidden absolute inset-0 flex-col items-center justify-center text-muted gap-2">
+                <Tv size={32} className="opacity-30" />
+                <span className="font-mono text-xs tracking-widest">[NO SIGNAL]</span>
+                <span className="text-[10px] font-mono">Insert profile photo</span>
+              </div>
 
-               {/* Timecode overlay */}
-               <div className="absolute top-4 left-4 z-10">
-                 <span className="text-[10px] font-mono text-ivory/60 tracking-wider">00:00:01:12</span>
-               </div>
+              {/* Cinematic gradient overlay on image */}
+              <div className="absolute inset-0 bg-gradient-to-t from-navy-deep via-transparent to-navy-deep/30 pointer-events-none"></div>
 
-               {/* Bottom info bar overlay */}
-               <div className="absolute bottom-0 left-0 right-0 p-4 z-10 bg-gradient-to-t from-navy-deep/90 to-transparent">
-                 <div className="flex items-center justify-between">
-                   <div className="flex flex-col gap-0.5">
-                     <span className="text-[10px] font-mono text-muted uppercase tracking-wider">Output</span>
-                     <span className="text-xs font-semibold text-ivory">MONITOR 01</span>
-                   </div>
-                   <div className="flex items-center gap-1">
-                     {/* Signal strength bars */}
-                     {[1, 2, 3, 4].map((i) => (
-                       <motion.div 
-                         key={i} 
-                         className="w-1 bg-blue-accent rounded-full origin-bottom"
-                         style={{ height: `${i * 4 + 4}px` }}
-                         animate={prefersReducedMotion ? {} : { 
-                           scaleY: [1, 0.5, 1],
-                         }}
-                         transition={{ 
-                           duration: 1.5, 
-                           delay: i * 0.15, 
-                           repeat: Infinity,
-                           ease: "easeInOut"
-                         }}
-                       />
-                     ))}
-                   </div>
-                 </div>
-               </div>
+              {/* REC indicator */}
+              <div className="absolute top-4 right-4 flex items-center gap-1.5 z-10">
+                <div className="w-2 h-2 rounded-full bg-onair-red animate-pulse shadow-[0_0_6px_rgba(232,68,44,0.8)]"></div>
+                <span className="text-[10px] font-mono text-onair-red font-medium tracking-widest">REC</span>
+              </div>
+
+              {/* Timecode overlay */}
+              <div className="absolute top-4 left-4 z-10">
+                <span className="text-[10px] font-mono text-ivory/60 tracking-wider">00:00:01:12</span>
+              </div>
+
+              {/* Bottom info bar overlay */}
+              <div className="absolute bottom-0 left-0 right-0 p-4 z-10 bg-gradient-to-t from-navy-deep/90 to-transparent">
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[10px] font-mono text-muted uppercase tracking-wider">Output</span>
+                    <span className="text-xs font-semibold text-ivory">MONITOR 01</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {/* Signal strength bars */}
+                    {[1, 2, 3, 4].map((i) => (
+                      <motion.div
+                        key={i}
+                        className="w-1 bg-blue-accent rounded-full origin-bottom"
+                        style={{ height: `${i * 4 + 4}px` }}
+                        animate={prefersReducedMotion ? {} : {
+                          scaleY: [1, 0.5, 1],
+                        }}
+                        transition={{
+                          duration: 1.5,
+                          delay: i * 0.15,
+                          repeat: Infinity,
+                          ease: "easeInOut"
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Floating badge */}
-          <motion.div 
+          <motion.div
             className="absolute -bottom-4 -left-4 lg:-left-8 bg-navy-deep border border-divider rounded-sm px-4 py-3 shadow-xl z-20"
             initial={prefersReducedMotion ? {} : { opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -331,9 +330,9 @@ export default function Hero() {
         </motion.div>
 
       </div>
-      
+
       {/* Scroll Down Indicator */}
-      <motion.div 
+      <motion.div
         className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-muted z-20"
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.6 }}
