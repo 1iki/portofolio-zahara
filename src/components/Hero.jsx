@@ -116,8 +116,8 @@ export default function Hero() {
                 <div
                   key={i}
                   className={`w-2 h-2 rounded-full ${i === 1 ? 'bg-onair-red shadow-[0_0_8px_rgba(232,68,44,0.8)]' :
-                      i <= 3 ? 'bg-blue-accent shadow-[0_0_6px_rgba(74,127,232,0.5)]' :
-                        'bg-muted/40'
+                    i <= 3 ? 'bg-blue-accent shadow-[0_0_6px_rgba(74,127,232,0.5)]' :
+                      'bg-muted/40'
                     }`}
                 ></div>
               ))}
@@ -140,7 +140,8 @@ export default function Hero() {
             <h1 className="font-display text-[clamp(3rem,7vw,6.5rem)] leading-[0.92] tracking-tight text-flicker">
               <span className="block">Zahara</span>
               <span className="block">Elhusna</span>
-              <span className="block italic text-muted/70">Barok<span className="text-blue-accent">.</span></span>
+              <span className="block">Barok<span className="text-blue-accent">.</span></span>
+              {/* <span className="block italic text-muted/70">Barok<span className="text-blue-accent">.</span></span> */}
             </h1>
           </motion.div>
 

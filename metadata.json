@@ -1,6 +1,6 @@
 {
-  "name": "The Console - Zahara Elhusna",
-  "description": "Portofolio Saya.",
+  "name": "Portofolio - Zahara Elhusna Barok",
+  "description": "Portofolio digital Zahara Elhusna Barok—produser, editor, content creator. Menampilkan karya, produksi video, produksi audio, dan dokumentasi produksi untuk Polimedia TV, RRI, serta berbagai brand dan organisasi. Desain antarmuka berbasis kontrol panel siaran dengan elemen interaktif, visual broadcast, dan workflow produksi yang terintegrasi.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

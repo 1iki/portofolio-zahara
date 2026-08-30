@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { works } from '../data/works';
 import WorkCard from './WorkCard';
+import WorkSection from './WorkSection';
+import WorkHighlight from './WorkHighlight';
 import VideoModal from './VideoModal';
 import ProjectInfoModal from './ProjectInfoModal';
 import { useSound } from '../context/SoundContext';
@@ -18,13 +20,69 @@ export default function WorkGrid() {
   // Roles that fall under the "Creative" umbrella filter
   const creativeRoles = ['Creative Support', 'Clipper', 'Script Continuity', 'Talent Coordinator', 'Asisten Script', 'Asisten Produser', 'Sutradara', 'Content Creator'];
 
-  const filteredWorks = works.filter((work) => {
-    if (activeFilter === 'Semua') return true;
-    if (activeFilter === 'Creative') {
-      return creativeRoles.some((cr) => work.role.includes(cr));
-    }
-    return work.role.includes(activeFilter);
-  });
+  // ── Step 1: Filter by role ──────────────────────────────────────
+  const filteredWorks = useMemo(() => {
+    return works.filter((work) => {
+      if (activeFilter === 'Semua') return true;
+      if (activeFilter === 'Creative') {
+        return creativeRoles.some((cr) => work.role.includes(cr));
+      }
+      return work.role.includes(activeFilter);
+    });
+  }, [activeFilter]);
+
+  // ── Step 2: Group by category, calculate latest date, sort ─────
+  const groupedCategories = useMemo(() => {
+    const grouped = filteredWorks.reduce((acc, work) => {
+      const category = work.category;
+
+      // Defensive: skip works with missing/unknown category
+      if (!category) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn(`Work "${work.title}" has no category`);
+        }
+        return acc;
+      }
+
+      if (!acc[category]) {
+        acc[category] = {
+          category,
+          works: [],
+          latestDate: null,
+        };
+      }
+
+      acc[category].works.push(work);
+
+      // Calculate latest endDate for this category
+      if (work.endDate) {
+        const workDate = new Date(work.endDate);
+        if (!isNaN(workDate.getTime())) {
+          if (!acc[category].latestDate || workDate > acc[category].latestDate) {
+            acc[category].latestDate = workDate;
+          }
+        }
+      } else if (process.env.NODE_ENV !== 'production') {
+        console.warn(`Work "${work.title}" has no endDate`);
+      }
+
+      return acc;
+    }, {});
+
+    // Convert to array and sort by latest date (newest category first)
+    return Object.values(grouped).sort((a, b) => {
+      const dateA = a.latestDate ? a.latestDate.getTime() : 0;
+      const dateB = b.latestDate ? b.latestDate.getTime() : 0;
+      return dateB - dateA;
+    });
+  }, [filteredWorks]);
+
+  // ── Step 3: Determine latest work for highlight ────────────────
+  const latestWork = useMemo(() => {
+    return [...filteredWorks]
+      .filter((work) => work.endDate)
+      .sort((a, b) => new Date(b.endDate) - new Date(a.endDate))[0] || null;
+  }, [filteredWorks]);
 
   const handleFilterClick = (filter) => {
     playClick();
@@ -40,6 +98,8 @@ export default function WorkGrid() {
     setSelectedVideo(null);
     setSelectedInfo(infoWork);
   };
+
+  const hasResults = filteredWorks.length > 0;
 
   return (
     <section className="py-24 max-w-7xl mx-auto px-6" id="karya">
@@ -70,41 +130,62 @@ export default function WorkGrid() {
         </div>
       </div>
 
-      {/* Grid */}
-      <motion.div 
-        layout
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-      >
-        <AnimatePresence mode="popLayout">
-          {filteredWorks.length > 0 ? (
-            filteredWorks.map((work, idx) => (
-              <WorkCard 
-                key={`${work.id || work.title}-${idx}`} 
-                work={work} 
+      {/* Content: Highlight + Grouped Sections */}
+      <AnimatePresence mode="wait">
+        {hasResults ? (
+          <motion.div
+            key={activeFilter}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {/* Latest Signal Highlight */}
+            {latestWork && (
+              <WorkHighlight
+                work={latestWork}
                 onSelectVideo={handleOpenVideo}
                 onSelectInfo={handleOpenInfo}
               />
-            ))
-          ) : (
-            <motion.div 
-              layout
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="col-span-full py-24 flex flex-col items-center justify-center text-center border border-dashed border-divider rounded-sm"
-            >
-              <span className="font-mono text-xs tracking-widest text-muted mb-2">[CHANNEL NOT FOUND]</span>
-              <p className="text-ivory">Tidak ada karya yang sesuai dengan filter ini.</p>
-              <button 
-                onClick={() => handleFilterClick('Semua')}
-                className="mt-4 console-btn text-xs text-blue-accent border-blue-accent"
+            )}
+
+            {/* Category Sections — dynamically sorted */}
+            {groupedCategories.map((group, index) => (
+              <WorkSection
+                key={group.category}
+                number={String(index + 1).padStart(2, '0')}
+                category={group.category}
               >
-                RESET CHANNEL
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
+                {group.works.map((work, idx) => (
+                  <WorkCard
+                    key={`${work.id || work.title}-${idx}`}
+                    work={work}
+                    onSelectVideo={handleOpenVideo}
+                    onSelectInfo={handleOpenInfo}
+                  />
+                ))}
+              </WorkSection>
+            ))}
+          </motion.div>
+        ) : (
+          <motion.div 
+            key="empty"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="py-24 flex flex-col items-center justify-center text-center border border-dashed border-divider rounded-sm"
+          >
+            <span className="font-mono text-xs tracking-widest text-muted mb-2">[CHANNEL NOT FOUND]</span>
+            <p className="text-ivory">Tidak ada karya yang sesuai dengan filter ini.</p>
+            <button 
+              onClick={() => handleFilterClick('Semua')}
+              className="mt-4 console-btn text-xs text-blue-accent border-blue-accent"
+            >
+              RESET CHANNEL
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Video Modal */}
       {selectedVideo && (

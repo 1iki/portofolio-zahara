@@ -13,7 +13,7 @@ export default function Contact() {
       ></div>
 
       <div className="max-w-4xl mx-auto flex flex-col items-center text-center gap-12 relative z-10">
-        
+
         <div className="flex flex-col gap-4 items-center">
           <h2 className="font-display text-[clamp(2.5rem,5vw,4rem)] leading-none">Siaran Selesai.</h2>
           <p className="text-muted max-w-md">
@@ -22,8 +22,11 @@ export default function Contact() {
         </div>
 
         <div className="flex flex-wrap justify-center gap-4">
-          <a href={contact.whatsapp} target="_blank" rel="noopener noreferrer" className="px-6 py-3 rounded-full border border-divider hover:border-ivory text-sm font-mono tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-accent focus-visible:ring-offset-2 focus-visible:ring-offset-navy-base">
+          {/* <a href={contact.whatsapp} target="_blank" rel="noopener noreferrer" className="px-6 py-3 rounded-full border border-divider hover:border-ivory text-sm font-mono tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-accent focus-visible:ring-offset-2 focus-visible:ring-offset-navy-base">
             WHATSAPP
+          </a> */}
+          <a href={contact.linkedin} target="_blank" rel="noopener noreferrer" className="px-6 py-3 rounded-full border border-divider hover:border-ivory text-sm font-mono tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-accent focus-visible:ring-offset-2 focus-visible:ring-offset-navy-base">
+            LINKEDIN
           </a>
           <a href={contact.instagram} target="_blank" rel="noopener noreferrer" className="px-6 py-3 rounded-full border border-divider hover:border-ivory text-sm font-mono tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-accent focus-visible:ring-offset-2 focus-visible:ring-offset-navy-base">
             INSTAGRAM
@@ -38,7 +41,7 @@ export default function Contact() {
           <span className="text-[10px] font-mono text-muted uppercase tracking-widest">
             © {new Date().getFullYear()} Zahara Elhusna Barok
           </span>
-          
+
           {/* Idle ON AIR dot */}
           <div className="flex items-center gap-2 px-3 py-1 rounded-full border border-divider bg-navy-deep">
             <div className="w-2 h-2 rounded-full bg-divider"></div>

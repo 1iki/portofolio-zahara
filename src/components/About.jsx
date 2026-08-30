@@ -38,11 +38,11 @@ export default function About() {
 
           <div className="prose prose-invert prose-p:text-ivory/90 prose-p:leading-relaxed max-w-none">
             <p className="text-lg">
-              Lulusan Penyiaran yang berdedikasi dan memiliki passion mendalam di balik layar maupun di depan kamera.
-              Saya mengoperasikan produksi dengan presisi, memastikan setiap elemen siaran dari naskah hingga eksekusi berjalan tanpa cela.
+              Lulusan D3 Penyiaran Politeknik Negeri Media Kreatif Jakarta dengan minat dan pengalaman dalam dunia produksi media.
+              Berperan sebagai produser, penulis naskah, dan social media specialist.
             </p>
             <p className="text-muted mt-4">
-              Terbiasa menangani dinamika produksi yang cepat, saya percaya bahwa manajemen yang baik dan penceritaan yang kuat adalah kunci dari setiap program yang sukses. Dari merumuskan ide kreatif hingga mengatur alur kerja tim, fokus saya adalah hasil akhir yang berdampak.
+              Memiliki pengalaman berorganisasi, kemampuan komunikasi yang baik serta kreatif dalam menciptakan program audio visual di berbagai platform digital.
             </p>
           </div>
 

@@ -1,6 +1,9 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { motion, useInView, animate } from 'motion/react';
 import { useReducedMotion } from '../hooks/useReducedMotion';
+import { calculatePortfolioStats } from '../lib/portfolioStats';
+import { works } from '../data/works';
+import { experience } from '../data/experience';
 
 function StatBar({ label, targetValue, suffix = '', delay }) {
   const ref = useRef(null);
@@ -74,12 +77,10 @@ function StatBar({ label, targetValue, suffix = '', delay }) {
 }
 
 export default function StatsLevelMeter() {
-  const stats = [
-    { label: "Konten Diproduksi", value: 109, suffix: "+" },
-    { label: "Reels Views", value: 2081, suffix: "" },
-    { label: "YouTube Views", value: 388, suffix: "" },
-    { label: "Program Ditangani", value: 12, suffix: "" }
-  ];
+  const stats = useMemo(
+    () => calculatePortfolioStats(works, experience),
+    [/* works and experience are static module imports — stable references */]
+  );
 
   return (
     <section className="py-16 sm:py-20 md:py-24 border-t border-divider bg-navy-base px-4 sm:px-6">
