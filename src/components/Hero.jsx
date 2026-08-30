@@ -196,8 +196,11 @@ export default function Hero() {
             </button>
 
             <div className="flex items-center gap-3">
-              <a href={contact.whatsapp} target="_blank" rel="noopener noreferrer" className="px-4 py-2.5 rounded-full border border-divider text-xs font-mono tracking-wide text-muted hover:text-ivory hover:border-ivory/30 transition-colors">
+              {/* <a href={contact.whatsapp} target="_blank" rel="noopener noreferrer" className="px-4 py-2.5 rounded-full border border-divider text-xs font-mono tracking-wide text-muted hover:text-ivory hover:border-ivory/30 transition-colors">
                 WA
+              </a> */}
+              <a href={contact.linkedin} target="_blank" rel="noopener noreferrer" className="px-4 py-2.5 rounded-full border border-divider text-xs font-mono tracking-wide text-muted hover:text-ivory hover:border-ivory/30 transition-colors">
+                LinkedIn
               </a>
               <a href={contact.instagram} target="_blank" rel="noopener noreferrer" className="px-4 py-2.5 rounded-full border border-divider text-xs font-mono tracking-wide text-muted hover:text-ivory hover:border-ivory/30 transition-colors">
                 IG
