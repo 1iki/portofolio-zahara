@@ -68,12 +68,12 @@ export default function About() {
                     </div>
                     <div className="flex flex-col">
                       <h4 className="font-semibold text-ivory text-lg">{edu.institution}</h4>
-                      {/* <p className="text-muted text-sm">{edu.program}</p>
+                      <p className="text-muted text-sm">{edu.program}</p>
                       {edu.gpa && (
                         <p className="text-xs font-mono mt-1 text-muted">
                           IPK <span className="text-blue-accent">{edu.gpa}</span> — {edu.gpaNote}
                         </p>
-                      )} */}
+                      )}
                     </div>
                   </div>
                 </div>
