@@ -1,6 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { ChevronDown, Filter } from 'lucide-react';
 import { works } from '../data/works';
+import { roleFilters, matchesRoleFilter } from '../data/roleFilters';
 import WorkCard from './WorkCard';
 import WorkSection from './WorkSection';
 import WorkHighlight from './WorkHighlight';
@@ -11,25 +13,31 @@ import { cn } from '../lib/utils';
 
 export default function WorkGrid() {
   const [activeFilter, setActiveFilter] = useState('Semua');
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [selectedInfo, setSelectedInfo] = useState(null);
   const { playClick } = useSound();
 
-  const filters = ['Semua', 'Produser', 'Penulis Naskah', 'Reporter', 'Host', 'Creative'];
-
-  // Roles that fall under the "Creative" umbrella filter
-  const creativeRoles = ['Creative Support', 'Clipper', 'Script Continuity', 'Talent Coordinator', 'Asisten Script', 'Asisten Produser', 'Sutradara', 'Content Creator'];
-
-  // ── Step 1: Filter by role ──────────────────────────────────────
-  const filteredWorks = useMemo(() => {
-    return works.filter((work) => {
-      if (activeFilter === 'Semua') return true;
-      if (activeFilter === 'Creative') {
-        return creativeRoles.some((cr) => work.role.includes(cr));
+  // Close mobile filter popover on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setIsMobileFilterOpen(false);
       }
-      return work.role.includes(activeFilter);
-    });
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Find active filter object from configuration
+  const currentFilterObj = useMemo(() => {
+    return roleFilters.find((f) => f.label === activeFilter) || roleFilters[0];
   }, [activeFilter]);
+
+  // ── Step 1: Filter by role using taxonomy configuration ──────────
+  const filteredWorks = useMemo(() => {
+    return works.filter((work) => matchesRoleFilter(work, currentFilterObj));
+  }, [currentFilterObj]);
 
   // ── Step 2: Group by category, calculate latest date, sort ─────
   const groupedCategories = useMemo(() => {
@@ -108,25 +116,87 @@ export default function WorkGrid() {
           <h2 className="font-display text-[clamp(2rem,4vw,3.25rem)] leading-[1.05]">Karya &<br/>Portofolio</h2>
         </div>
 
-        {/* Channel Dial Filter */}
-        <div className="flex flex-wrap items-center gap-2">
-          {filters.map((filter) => (
+        {/* Channel Dial Filter - Desktop/Tablet */}
+        <div className="hidden md:flex flex-wrap items-center gap-2">
+          {roleFilters.map((filter) => (
             <button
-              key={filter}
-              onClick={() => handleFilterClick(filter)}
+              key={filter.id}
+              onClick={() => handleFilterClick(filter.label)}
+              aria-pressed={activeFilter === filter.label}
               className={cn(
                 "px-4 py-2 rounded-full border text-xs font-mono tracking-wide transition-all duration-300",
-                activeFilter === filter 
+                activeFilter === filter.label 
                   ? "border-blue-accent bg-blue-accent/10 text-blue-accent shadow-[0_0_10px_rgba(74,127,232,0.2)]" 
                   : "border-divider bg-transparent text-muted hover:border-blue-accent/50 hover:text-ivory"
               )}
             >
               <span className="flex items-center gap-2">
-                {activeFilter === filter && <span className="w-1.5 h-1.5 rounded-full bg-current"></span>}
-                {filter}
+                {activeFilter === filter.label && <span className="w-1.5 h-1.5 rounded-full bg-current"></span>}
+                {filter.label}
               </span>
             </button>
           ))}
+        </div>
+
+        {/* Channel Dial Filter - Mobile Compact Popover */}
+        <div className="block md:hidden relative w-full sm:w-auto">
+          <button
+            onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
+            aria-expanded={isMobileFilterOpen}
+            aria-haspopup="listbox"
+            aria-label="Pilih kategori filter"
+            className="w-full flex items-center justify-between gap-3 px-4 py-2.5 rounded-full border border-blue-accent/50 bg-navy-deep text-ivory text-xs font-mono tracking-wide shadow-md"
+          >
+            <span className="flex items-center gap-2">
+              <Filter size={14} className="text-blue-accent" />
+              <span>FILTER: <strong className="text-blue-accent uppercase">{activeFilter}</strong></span>
+            </span>
+            <ChevronDown size={14} className={cn("transition-transform duration-200 text-muted", isMobileFilterOpen && "rotate-180")} />
+          </button>
+
+          {isMobileFilterOpen && (
+            <>
+              {/* Invisible backdrop overlay to catch taps outside */}
+              <div 
+                className="fixed inset-0 z-30" 
+                onClick={() => setIsMobileFilterOpen(false)} 
+              />
+              
+              {/* Floating Compact Filter Panel */}
+              <div 
+                role="listbox" 
+                aria-label="Daftar filter role"
+                className="absolute right-0 left-0 sm:left-auto top-full mt-2 sm:w-64 bg-navy-deep border border-divider rounded-xl shadow-2xl p-2 z-40 flex flex-col gap-1 max-h-[60vh] overflow-y-auto"
+              >
+                <div className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest text-muted border-b border-divider/50 mb-1 flex items-center justify-between">
+                  <span>FILTER ROLE</span>
+                  <span className="text-[9px] text-blue-accent">8 CATEGORIES</span>
+                </div>
+                {roleFilters.map((filter) => (
+                  <button
+                    key={filter.id}
+                    role="option"
+                    aria-selected={activeFilter === filter.label}
+                    onClick={() => {
+                      handleFilterClick(filter.label);
+                      setIsMobileFilterOpen(false);
+                    }}
+                    className={cn(
+                      "w-full text-left px-3 py-2 rounded-lg text-xs font-mono transition-colors flex items-center justify-between",
+                      activeFilter === filter.label
+                        ? "bg-blue-accent/20 text-blue-accent font-semibold"
+                        : "text-ivory/80 hover:bg-navy-base hover:text-ivory"
+                    )}
+                  >
+                    <span>{filter.label}</span>
+                    {activeFilter === filter.label && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-accent shadow-[0_0_6px_rgba(74,127,232,0.8)]"></span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
 

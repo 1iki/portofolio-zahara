@@ -214,7 +214,7 @@ export default function Hero() {
           {/* Quick Stats Strip */}
           <motion.div variants={itemVariants} className="flex items-center gap-6 mt-4 pt-6 border-t border-divider">
             {[
-              { num: "13+", label: "Projects" },
+              { num: "21", label: "Projects" },
               // { num: "3.74", label: "IPK" },
               { num: "2K+", label: "Views" }
             ].map((stat, idx) => (

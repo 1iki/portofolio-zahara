@@ -71,7 +71,8 @@ export default function About() {
                       <p className="text-muted text-sm">{edu.program}</p>
                       {edu.gpa && (
                         <p className="text-xs font-mono mt-1 text-muted">
-                          IPK <span className="text-blue-accent">{edu.gpa}</span> — {edu.gpaNote}
+                          {edu.gpaLabel || 'IPK'} <span className="text-blue-accent">{edu.gpa}</span>
+                          {edu.gpaNote && ` — ${edu.gpaNote}`}
                         </p>
                       )}
                     </div>

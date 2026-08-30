@@ -6,7 +6,8 @@ export const education = [
     status: "Lulus / Yudisium",
     graduationDate: "19 Agustus 2026",
     gpa: "3.74",
-    gpaNote: "IPK Terbaik se-Program Studi",
+    gpaLabel: "IPK",
+    gpaNote: null,
   },
   {
     institution: "SMK Negeri 67 Jakarta",
@@ -15,6 +16,7 @@ export const education = [
     status: null,
     graduationDate: null,
     gpa: "86,43",
+    gpaLabel: "Nilai Rata-Rata",
     gpaNote: null,
   },
 ];
