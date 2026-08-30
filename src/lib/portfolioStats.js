@@ -55,6 +55,6 @@ export function calculatePortfolioStats(works, experiences) {
     { label: "Konten Diproduksi", value: contentProduced, suffix: "+" },
     { label: "Reels Views", value: reelsViews, suffix: "" },
     { label: "YouTube Views", value: youtubeViews, suffix: "" },
-    { label: "Program Ditangani", value: programsHandled, suffix: "" },
+    { label: "Produksi Ditangani", value: programsHandled, suffix: "" },
   ];
 }
