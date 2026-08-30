@@ -11,6 +11,8 @@ import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import About from './components/About';
 import WorkGrid from './components/WorkGrid';
+import ScriptPreviewSection from './components/ScriptPreviewSection';
+import DocumentationSection from './components/DocumentationSection';
 import StatsLevelMeter from './components/StatsLevelMeter';
 import Timeline from './components/Timeline';
 import Contact from './components/Contact';
@@ -28,6 +30,8 @@ export default function App() {
           <Hero />
           <About />
           <WorkGrid />
+          <ScriptPreviewSection />
+          <DocumentationSection />
           <StatsLevelMeter />
           <Timeline />
         </main>

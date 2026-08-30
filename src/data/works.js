@@ -109,8 +109,8 @@ export const works = [
   },
 
   {
-    id: "kmb-rri-bogor-salah-pintu",
-    title: "KMB RRI Bogor — Salah Pintu",
+    id: "rri-bogor-salah-pintu",
+    title: "RRI Bogor — Salah Pintu",
     program: "Ramadan Comedy Series",
     category: "magang",
     role: "Script Writer & Talent Coordinator",
@@ -133,6 +133,30 @@ export const works = [
       link: null,
     },
     source: "LinkedIn",
+  },
+
+  {
+    id: "yukibas",
+    title: "Yukibas",
+    program: null,
+    category: "kampus",
+    role: "Penulis Naskah",
+    date: "Sep – Des 2025",
+    startDate: "2025-09-01",
+    endDate: "2025-12-31",
+    platform: "YouTube",
+    link: "https://youtu.be/U54IN4LP2-E?si=gzkeIvfzxwB_ohg7",
+    mediaType: "youtube",
+    thumbnail: "https://i.ytimg.com/vi/U54IN4LP2-E/maxresdefault.jpg",
+    videoUrl: "https://www.youtube.com/embed/U54IN4LP2-E?si=gzkeIvfzxwB_ohg7",
+    externalUrl: "https://youtu.be/U54IN4LP2-E?si=gzkeIvfzxwB_ohg7",
+    organization: "Politeknik Negeri Media Kreatif",
+    description:
+      "Yukibas merupakan program yang menghadirkan narasumber inspiratif untuk berbagi pengalaman, tips and tricks, topik menarik, serta kisah tokoh berprestasi. Program ini dikemas secara menarik melalui berbagai permainan dan tantangan.",
+    output: null,
+    type: "variety",
+    featuredEpisode: null,
+    source: "PDF+LinkedIn",
   },
 
   {

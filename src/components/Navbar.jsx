@@ -13,7 +13,7 @@ export default function Navbar() {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
       
-      const sections = ['home', 'tentang', 'karya', 'pengalaman', 'kontak'];
+      const sections = ['home', 'tentang', 'karya', 'naskah', 'dokumentasi', 'pengalaman', 'kontak'];
       let current = 'home';
       
       for (const section of sections) {
@@ -39,6 +39,8 @@ export default function Navbar() {
     { id: 'home', label: 'Home' },
     { id: 'tentang', label: 'Tentang' },
     { id: 'karya', label: 'Karya' },
+    { id: 'naskah', label: 'Naskah' },
+    { id: 'dokumentasi', label: 'Dokumentasi' },
     { id: 'pengalaman', label: 'Pengalaman' },
     { id: 'kontak', label: 'Kontak' }
   ];
