@@ -5,10 +5,10 @@ import { works } from '../data/works';
 import { roleFilters, matchesRoleFilter } from '../data/roleFilters';
 import WorkCard from './WorkCard';
 import WorkSection from './WorkSection';
-import WorkHighlight from './WorkHighlight';
 import VideoModal from './VideoModal';
 import ProjectInfoModal from './ProjectInfoModal';
 import { useSound } from '../context/SoundContext';
+import { useIsMobile } from '../hooks/useIsMobile';
 import { cn } from '../lib/utils';
 
 export default function WorkGrid() {
@@ -17,6 +17,36 @@ export default function WorkGrid() {
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [selectedInfo, setSelectedInfo] = useState(null);
   const { playClick } = useSound();
+
+  const isMobile = useIsMobile(767);
+
+  // Accordion state: Set of category IDs currently expanded on mobile (default: empty = collapsed)
+  const [openGroups, setOpenGroups] = useState(() => new Set());
+  // Deferred render cache: Set of category IDs that have been expanded at least once on mobile
+  const [loadedGroups, setLoadedGroups] = useState(() => new Set());
+
+  // Toggle single category accordion group on mobile (multi-open supported)
+  const handleToggleGroup = (category) => {
+    playClick();
+    setOpenGroups((prevOpen) => {
+      const nextOpen = new Set(prevOpen);
+      if (nextOpen.has(category)) {
+        nextOpen.delete(category);
+      } else {
+        nextOpen.add(category);
+      }
+      return nextOpen;
+    });
+
+    setLoadedGroups((prevLoaded) => {
+      if (!prevLoaded.has(category)) {
+        const nextLoaded = new Set(prevLoaded);
+        nextLoaded.add(category);
+        return nextLoaded;
+      }
+      return prevLoaded;
+    });
+  };
 
   // Close mobile filter popover on Escape key
   useEffect(() => {
@@ -85,12 +115,6 @@ export default function WorkGrid() {
     });
   }, [filteredWorks]);
 
-  // ── Step 3: Determine latest work for highlight ────────────────
-  const latestWork = useMemo(() => {
-    return [...filteredWorks]
-      .filter((work) => work.endDate)
-      .sort((a, b) => new Date(b.endDate) - new Date(a.endDate))[0] || null;
-  }, [filteredWorks]);
 
   const handleFilterClick = (filter) => {
     playClick();
@@ -210,32 +234,27 @@ export default function WorkGrid() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
-            {/* Latest Signal Highlight */}
-            {latestWork && (
-              <WorkHighlight
-                work={latestWork}
-                onSelectVideo={handleOpenVideo}
-                onSelectInfo={handleOpenInfo}
-              />
-            )}
-
             {/* Category Sections — dynamically sorted */}
-            {groupedCategories.map((group, index) => (
-              <WorkSection
-                key={group.category}
-                number={String(index + 1).padStart(2, '0')}
-                category={group.category}
-              >
-                {group.works.map((work, idx) => (
-                  <WorkCard
-                    key={`${work.id || work.title}-${idx}`}
-                    work={work}
-                    onSelectVideo={handleOpenVideo}
-                    onSelectInfo={handleOpenInfo}
-                  />
-                ))}
-              </WorkSection>
-            ))}
+            {groupedCategories.map((group, index) => {
+              const categoryId = group.category;
+              const isOpen = openGroups.has(categoryId);
+              const isLoaded = loadedGroups.has(categoryId);
+
+              return (
+                <WorkSection
+                  key={categoryId}
+                  number={String(index + 1).padStart(2, '0')}
+                  category={categoryId}
+                  works={group.works}
+                  isOpen={isOpen}
+                  isLoaded={isLoaded}
+                  isMobile={isMobile}
+                  onToggle={() => handleToggleGroup(categoryId)}
+                  onSelectVideo={handleOpenVideo}
+                  onSelectInfo={handleOpenInfo}
+                />
+              );
+            })}
           </motion.div>
         ) : (
           <motion.div 

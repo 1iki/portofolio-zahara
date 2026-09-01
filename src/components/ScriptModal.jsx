@@ -45,7 +45,7 @@ export default function ScriptModal({ script, onClose }) {
 
   return (
     <AnimatePresence>
-      <div 
+      <div
         className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-8 bg-navy-base/90 backdrop-blur-md overflow-y-auto"
         onClick={onClose}
       >
@@ -90,7 +90,7 @@ export default function ScriptModal({ script, onClose }) {
 
           {/* Modal Scrollable Body */}
           <div className="p-4 sm:p-6 overflow-y-auto space-y-6">
-            
+
             {/* Metadata Bar */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-lg bg-navy-base border border-divider/60 text-xs font-mono">
               <div>
@@ -117,7 +117,7 @@ export default function ScriptModal({ script, onClose }) {
             </p>
 
             {/* Script Image Container with Protection Features */}
-            <div 
+            <div
               className="relative w-full rounded-lg border border-divider bg-navy-base overflow-hidden select-none group"
               onContextMenu={(e) => e.preventDefault()} // Disable Right Click menu on script viewer
             >
@@ -126,8 +126,8 @@ export default function ScriptModal({ script, onClose }) {
 
               {/* Render Script Preview as Image/SVG Asset */}
               <div className="relative w-full flex justify-center bg-navy-base p-2 sm:p-4 min-h-[450px]">
-                <img 
-                  src={script.previewImageUrl} 
+                <img
+                  src={script.previewImageUrl}
                   alt={`Cuplikan naskah ${script.title} oleh Zahara Elhusna Barok`}
                   className="w-full max-w-2xl h-auto object-contain rounded shadow-lg select-none pointer-events-none"
                   draggable={false}
@@ -191,7 +191,7 @@ export default function ScriptModal({ script, onClose }) {
                 © {new Date().getFullYear()} {WATERMARK_CONFIG.ownerName} — Hak cipta dilindungi undang-undang.
               </span>
               <span className="text-[10px] text-muted/70">
-                Watermarked sample • Anti-theft protected preview
+                Zahara Elhusna Barok • Anti-theft protected preview • Developed by @fachri.aer
               </span>
             </div>
 

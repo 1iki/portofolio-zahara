@@ -28,6 +28,7 @@ export const roleFilters = [
       "Asisten Produser",
       "Produser & Reporter",
       "Produser & Host",
+      "Redaktur Softnews",
     ],
   },
   {
@@ -81,7 +82,6 @@ export const roleFilters = [
       "Creative Support",
       "Content Creator & Reporter",
       "Clipper & Script Continuity",
-      "Redaktur Softnews",
     ],
   },
 ];

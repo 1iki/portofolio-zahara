@@ -116,11 +116,6 @@ export default function ProjectInfoModal({ work, onClose, onWatchVideo }) {
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h3 className="text-2xl font-bold text-ivory leading-tight">{work.title}</h3>
-                {work.program && (
-                  <span className="font-mono text-xs text-blue-accent tracking-wider block mt-1">
-                    PROGRAM: {work.program}
-                  </span>
-                )}
               </div>
               {work.output && (
                 <span className="px-3 py-1 bg-blue-accent/10 border border-blue-accent/30 rounded-sm text-xs font-mono tracking-wider text-blue-accent uppercase font-medium">
@@ -171,16 +166,6 @@ export default function ProjectInfoModal({ work, onClose, onWatchVideo }) {
                 <p className="text-muted text-sm italic">
                   Informasi detail dan dokumentasi karya tersedia dalam inventaris portofolio Zahara.
                 </p>
-              </div>
-            )}
-
-            {/* Featured Episode */}
-            {work.featuredEpisode && (
-              <div className="p-3 bg-navy-deep border border-divider/50 rounded-sm">
-                <span className="font-mono text-[9px] text-blue-accent tracking-wider uppercase block mb-1">
-                  FEATURED EPISODE / HIGHLIGHT
-                </span>
-                <span className="text-sm font-semibold text-ivory">{work.featuredEpisode.title}</span>
               </div>
             )}
           </div>

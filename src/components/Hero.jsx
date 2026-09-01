@@ -203,7 +203,7 @@ export default function Hero() {
                 LinkedIn
               </a>
               <a href={contact.instagram} target="_blank" rel="noopener noreferrer" className="px-4 py-2.5 rounded-full border border-divider text-xs font-mono tracking-wide text-muted hover:text-ivory hover:border-ivory/30 transition-colors">
-                IG
+                Instagram
               </a>
               <a href={`mailto:${contact.email}`} className="px-4 py-2.5 rounded-full border border-divider text-xs font-mono tracking-wide text-muted hover:text-ivory hover:border-ivory/30 transition-colors">
                 EMAIL

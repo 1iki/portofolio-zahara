@@ -267,15 +267,6 @@ export default function WorkCard({ work, onSelectVideo, onSelectInfo }) {
             </div>
           </div>
 
-          {/* Featured Episode */}
-          {work.featuredEpisode && (
-            <div className="px-2 py-1.5 bg-navy-base/50 border border-divider/30 rounded-sm">
-              <span className="font-mono text-[9px] text-muted tracking-wider uppercase block">FEATURED</span>
-              <span className="text-[11px] text-ivory/80 leading-tight">{work.featuredEpisode.title}</span>
-            </div>
-          )}
-
-          {/* Dual Action CTA Buttons Strip */}
           <div className="mt-2 pt-2 border-t border-divider/40 flex flex-wrap items-center justify-between gap-2">
             {isPlayable ? (
               <>

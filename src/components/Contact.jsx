@@ -15,7 +15,7 @@ export default function Contact() {
       <div className="max-w-4xl mx-auto flex flex-col items-center text-center gap-12 relative z-10">
 
         <div className="flex flex-col gap-4 items-center">
-          <h2 className="font-display text-[clamp(2.5rem,5vw,4rem)] leading-none">Siaran Selesai.</h2>
+          <h2 className="font-display text-[clamp(2.5rem,5vw,4rem)] leading-none">Ciptakan Karya Selanjutnya Bersama</h2>
           <p className="text-muted max-w-md">
             Hubungi saya untuk kolaborasi dan mari ciptakan produksi yang lebih berkesan.
           </p>
@@ -39,7 +39,15 @@ export default function Contact() {
         {/* Footer Base */}
         <div className="w-full flex items-center justify-between pt-12 border-t border-divider mt-12">
           <span className="text-[10px] font-mono text-muted uppercase tracking-widest">
-            © {new Date().getFullYear()} Zahara Elhusna Barok
+            © {new Date().getFullYear()} Zahara Elhusna Barok • Developed by{" "}
+            <a
+              href="https://fachri-aer.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-blue-accent transition-colors underline underline-offset-2"
+            >
+              @fachri.aer
+            </a>
           </span>
 
           {/* Idle ON AIR dot */}
