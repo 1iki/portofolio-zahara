@@ -43,6 +43,8 @@ export const documentations = [
     thumbnailUrl: "/projects/happy-science.webp",
     description: "Dokumentasi proses pengarahan talent anak-anak dan koordinasi tim teknis kamera saat pengambilan gambar variety show edukasi anak Jejak Flona.",
     tags: ["BTS Shooting", "Variety Show", "Polimedia"],
+    // Intrinsic: 565×800 (0.706) → Supported Portrait ratio 4:5
+    aspectRatio: "4 / 5",
   },
   {
     id: "bts-rri-salah-pintu-set",
@@ -57,6 +59,8 @@ export const documentations = [
     thumbnailUrl: "/projects/rri-bogor-creative-content.webp",
     description: "Suasana pengarahan naskah adegan dan rehearsal ekspresi talent sebelum take video episode Ramadan Comedy Series di RRI Bogor.",
     tags: ["BTS Sitkom", "RRI Bogor", "Talent Coordination"],
+    // Intrinsic: 240×480 (0.500) → Supported Vertical Story ratio 9:16
+    aspectRatio: "9 / 16",
   },
   {
     id: "bts-craftopia-video",
@@ -72,6 +76,8 @@ export const documentations = [
     thumbnailUrl: "https://i.ytimg.com/vi/jUBs0-Of9qY/hqdefault.jpg",
     description: "Highlight liputan di balik layar alur produksi program tutorial Craftopia Season 2 dari tahap persiapan properti hingga pasca-produksi.",
     tags: ["BTS Video", "Craftopia", "Polimedia TV"],
+    // YouTube video content → Supported Video ratio 16:9
+    aspectRatio: "16 / 9",
   },
   {
     id: "bts-rri-field-journalism",
@@ -86,6 +92,8 @@ export const documentations = [
     thumbnailUrl: "/projects/rri-bogor-produksi-berita-digital.webp",
     description: "Dokumentasi peliputan berita digital di lapangan, meliputi riset wawancara narasumber dan pengambilan gambar B-roll audio visual.",
     tags: ["Field Journalism", "Reporter", "RRI Bogor"],
+    // Broadcast news photo → Supported Landscape ratio 16:9
+    aspectRatio: "16 / 9",
   },
   {
     id: "bts-news-broadcast-video",
@@ -101,6 +109,8 @@ export const documentations = [
     thumbnailUrl: "https://i.ytimg.com/vi/tAUPgJXZqD4/hqdefault.jpg",
     description: "Dokumentasi koordinasi tim newsroom, teleprompter, dan pengarahan durasi naskah live broadcast saat siaran berlangsung.",
     tags: ["Live Broadcast", "Newsroom", "Polimedia"],
+    // YouTube broadcast thumbnail → Supported Video ratio 16:9
+    aspectRatio: "16 / 9",
   },
   {
     id: "bts-ngekost-bukan-kabur",
@@ -115,5 +125,7 @@ export const documentations = [
     thumbnailUrl: "/projects/ngekost-bukan-kabur.webp",
     description: "Dokumentasi pencatatan lembar adegan dan pemeriksaan kesinambungan (continuity) naskah selama proses shooting sitkom tugas akhir.",
     tags: ["Script Continuity", "Sitkom", "Tugas Akhir"],
+    // Intrinsic: 565×800 (0.706) → Supported Portrait ratio 4:5
+    aspectRatio: "4 / 5",
   },
 ];
