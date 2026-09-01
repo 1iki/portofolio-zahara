@@ -134,8 +134,12 @@ export default function Timeline() {
                   number={String(index + 1).padStart(2, '0')}
                   type={group.type}
                 >
-                  {group.items.map((item) => (
-                    <ExperienceItem key={item.id} item={item} />
+                  {group.items.map((item, idx) => (
+                    <ExperienceItem
+                      key={item.id}
+                      item={item}
+                      isLast={idx === group.items.length - 1}
+                    />
                   ))}
                 </ExperienceSection>
               ))}

@@ -22,10 +22,10 @@ export default function ExperienceSection({ number, type, children }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="mb-16 last:mb-0"
+      className="mb-16 md:mb-20 last:mb-0"
     >
       {/* Section Header */}
-      <div className="mb-8">
+      <div className="mb-8 md:mb-10">
         <div className="flex items-baseline gap-3 mb-1">
           <span className="font-mono text-sm md:text-base text-blue-accent tracking-wider font-medium">
             {number}
@@ -44,7 +44,7 @@ export default function ExperienceSection({ number, type, children }) {
       </div>
 
       {/* Experience Item Stack */}
-      <div className="flex flex-col gap-6">
+      <div className="space-y-0">
         {children}
       </div>
     </motion.section>
