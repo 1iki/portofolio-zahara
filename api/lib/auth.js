@@ -1,7 +1,12 @@
 import crypto from 'crypto';
 
-const AUTH_SECRET = process.env.AUTH_SECRET;
+const DEFAULT_AUTH_SECRET = 'zeze_cms_secure_session_secret_default_2026';
+const DEFAULT_PIN_SHA256 = '7c2f369bde679d94d91018d1d8934aee9153b0b48b077795aabd2f8c869f8875'; // SHA-256 of "250826"
 const SESSION_DURATION_MS = 4 * 60 * 60 * 1000; // 4 Hours
+
+function getAuthSecret() {
+  return process.env.AUTH_SECRET || DEFAULT_AUTH_SECRET;
+}
 
 /**
  * SHA-256 hash helper.
@@ -15,10 +20,10 @@ function sha256(text) {
  * Token payload format: timestamp.signature
  */
 export function createSessionToken() {
-  if (!AUTH_SECRET) throw new Error('AUTH_SECRET environment variable is missing.');
+  const secret = getAuthSecret();
   const expiresAt = Date.now() + SESSION_DURATION_MS;
   const payload = `cms_session_${expiresAt}`;
-  const hmac = crypto.createHmac('sha256', AUTH_SECRET).update(payload).digest('hex');
+  const hmac = crypto.createHmac('sha256', secret).update(payload).digest('hex');
   return `${payload}.${hmac}`;
 }
 
@@ -26,13 +31,13 @@ export function createSessionToken() {
  * Verify HMAC-SHA256 signed session token.
  */
 export function verifySessionToken(token) {
-  if (!AUTH_SECRET) return false;
+  const secret = getAuthSecret();
   if (!token || typeof token !== 'string') return false;
   const parts = token.split('.');
   if (parts.length !== 2) return false;
 
   const [payload, hmac] = parts;
-  const expectedHmac = crypto.createHmac('sha256', AUTH_SECRET).update(payload).digest('hex');
+  const expectedHmac = crypto.createHmac('sha256', secret).update(payload).digest('hex');
 
   if (hmac.length !== expectedHmac.length || !crypto.timingSafeEqual(Buffer.from(hmac), Buffer.from(expectedHmac))) return false;
 
@@ -48,17 +53,25 @@ export function verifySessionToken(token) {
 
 /**
  * Verify 6-digit numerical PIN server-side.
- * Accepts "250826".
+ * Default PIN: "250826"
  */
 export function verifyPinServer(pin) {
   if (!pin || typeof pin !== 'string' || pin.length !== 6 || !/^\d{6}$/.test(pin)) {
     return false;
   }
 
-  const expectedHash = process.env.CMS_PIN_SHA256;
-  if (!expectedHash || !/^[a-f0-9]{64}$/i.test(expectedHash)) return false;
+  let expectedHash = process.env.CMS_PIN_SHA256;
+
+  // Fallback to default PIN "250826" SHA-256 hash if env var is missing or invalid 64-hex string
+  if (!expectedHash || !/^[a-f0-9]{64}$/i.test(expectedHash)) {
+    expectedHash = DEFAULT_PIN_SHA256;
+  }
+
   const computedHash = sha256(pin);
-  return crypto.timingSafeEqual(Buffer.from(computedHash), Buffer.from(expectedHash));
+  return crypto.timingSafeEqual(
+    Buffer.from(computedHash.toLowerCase()), 
+    Buffer.from(expectedHash.toLowerCase())
+  );
 }
 
 /**
