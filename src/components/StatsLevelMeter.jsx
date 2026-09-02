@@ -2,8 +2,7 @@ import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { motion, useInView, animate } from 'motion/react';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { calculatePortfolioStats } from '../lib/portfolioStats';
-import { works } from '../data/works';
-import { experience } from '../data/experience';
+import { getWorks, getExperience, subscribeToDataChanges } from '../lib/contentService';
 
 function StatBar({ label, targetValue, suffix = '', delay }) {
   const ref = useRef(null);
@@ -77,9 +76,30 @@ function StatBar({ label, targetValue, suffix = '', delay }) {
 }
 
 export default function StatsLevelMeter() {
+  const [worksData, setWorksData] = useState([]);
+  const [expData, setExpData] = useState([]);
+
+  const loadData = async () => {
+    try {
+      const [w, e] = await Promise.all([getWorks(), getExperience()]);
+      setWorksData(Array.isArray(w) ? w : []);
+      setExpData(Array.isArray(e) ? e : []);
+    } catch (err) {
+      console.error('[StatsLevelMeter] Failed to load data:', err);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+    const unsubscribe = subscribeToDataChanges(() => {
+      loadData();
+    });
+    return unsubscribe;
+  }, []);
+
   const stats = useMemo(
-    () => calculatePortfolioStats(works, experience),
-    [/* works and experience are static module imports — stable references */]
+    () => calculatePortfolioStats(worksData, expData),
+    [worksData, expData]
   );
 
   return (

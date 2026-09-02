@@ -1,8 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronDown, Filter } from 'lucide-react';
-import { works } from '../data/works';
-import { roleFilters, matchesRoleFilter } from '../data/roleFilters';
+import { getWorks, getRoleFilters, getWorkCategories, subscribeToDataChanges } from '../lib/contentService';
 import WorkCard from './WorkCard';
 import WorkSection from './WorkSection';
 import VideoModal from './VideoModal';
@@ -11,7 +10,16 @@ import { useSound } from '../context/SoundContext';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { cn } from '../lib/utils';
 
+function matchesRoleFilter(work, filter) {
+  if (!filter || filter.roles === null || filter.id === 'all') return true;
+  if (!Array.isArray(filter.roles)) return true;
+  return filter.roles.includes(work.role);
+}
+
 export default function WorkGrid() {
+  const [worksList, setWorksList] = useState([]);
+  const [roleFiltersList, setRoleFiltersList] = useState([]);
+  const [workCategoriesMap, setWorkCategoriesMap] = useState({});
   const [activeFilter, setActiveFilter] = useState('Semua');
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
@@ -19,6 +27,37 @@ export default function WorkGrid() {
   const { playClick } = useSound();
 
   const isMobile = useIsMobile(767);
+
+  const loadAllData = async () => {
+    try {
+      const [w, rf, wc] = await Promise.all([
+        getWorks(),
+        getRoleFilters(),
+        getWorkCategories(),
+      ]);
+      setWorksList(Array.isArray(w) ? w : []);
+      setRoleFiltersList(Array.isArray(rf) ? rf : []);
+
+      if (Array.isArray(wc)) {
+        const catMap = {};
+        wc.forEach((c) => {
+          catMap[c.id] = { label: c.label, subtitle: c.subtitle };
+        });
+        setWorkCategoriesMap(catMap);
+      }
+    } catch (err) {
+      console.error('[WorkGrid] Failed to load grid data:', err);
+    }
+  };
+
+  // Subscribe to real-time CMS content mutations
+  useEffect(() => {
+    loadAllData();
+    const unsubscribe = subscribeToDataChanges(() => {
+      loadAllData();
+    });
+    return unsubscribe;
+  }, []);
 
   // Accordion state: Set of category IDs currently expanded on mobile (default: empty = collapsed)
   const [openGroups, setOpenGroups] = useState(() => new Set());
@@ -59,28 +98,22 @@ export default function WorkGrid() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Find active filter object from configuration
+  // Find active filter object from dynamic configuration
   const currentFilterObj = useMemo(() => {
-    return roleFilters.find((f) => f.label === activeFilter) || roleFilters[0];
-  }, [activeFilter]);
+    return roleFiltersList.find((f) => f.label === activeFilter) || roleFiltersList[0];
+  }, [activeFilter, roleFiltersList]);
 
   // ── Step 1: Filter by role using taxonomy configuration ──────────
   const filteredWorks = useMemo(() => {
-    return works.filter((work) => matchesRoleFilter(work, currentFilterObj));
-  }, [currentFilterObj]);
+    return worksList.filter((work) => matchesRoleFilter(work, currentFilterObj));
+  }, [worksList, currentFilterObj]);
 
   // ── Step 2: Group by category, calculate latest date, sort ─────
   const groupedCategories = useMemo(() => {
     const grouped = filteredWorks.reduce((acc, work) => {
       const category = work.category;
 
-      // Defensive: skip works with missing/unknown category
-      if (!category) {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn(`Work "${work.title}" has no category`);
-        }
-        return acc;
-      }
+      if (!category) return acc;
 
       if (!acc[category]) {
         acc[category] = {
@@ -92,7 +125,6 @@ export default function WorkGrid() {
 
       acc[category].works.push(work);
 
-      // Calculate latest endDate for this category
       if (work.endDate) {
         const workDate = new Date(work.endDate);
         if (!isNaN(workDate.getTime())) {
@@ -100,14 +132,11 @@ export default function WorkGrid() {
             acc[category].latestDate = workDate;
           }
         }
-      } else if (process.env.NODE_ENV !== 'production') {
-        console.warn(`Work "${work.title}" has no endDate`);
       }
 
       return acc;
     }, {});
 
-    // Convert to array and sort by latest date (newest category first)
     return Object.values(grouped).sort((a, b) => {
       const dateA = a.latestDate ? a.latestDate.getTime() : 0;
       const dateB = b.latestDate ? b.latestDate.getTime() : 0;
@@ -115,10 +144,9 @@ export default function WorkGrid() {
     });
   }, [filteredWorks]);
 
-
-  const handleFilterClick = (filter) => {
+  const handleFilterClick = (filterLabel) => {
     playClick();
-    setActiveFilter(filter);
+    setActiveFilter(filterLabel);
   };
 
   const handleOpenVideo = (videoWork) => {
@@ -142,7 +170,7 @@ export default function WorkGrid() {
 
         {/* Channel Dial Filter - Desktop/Tablet */}
         <div className="hidden md:flex flex-wrap items-center gap-2">
-          {roleFilters.map((filter) => (
+          {roleFiltersList.map((filter) => (
             <button
               key={filter.id}
               onClick={() => handleFilterClick(filter.label)}
@@ -180,13 +208,11 @@ export default function WorkGrid() {
 
           {isMobileFilterOpen && (
             <>
-              {/* Invisible backdrop overlay to catch taps outside */}
               <div 
                 className="fixed inset-0 z-30" 
                 onClick={() => setIsMobileFilterOpen(false)} 
               />
               
-              {/* Floating Compact Filter Panel */}
               <div 
                 role="listbox" 
                 aria-label="Daftar filter role"
@@ -194,9 +220,9 @@ export default function WorkGrid() {
               >
                 <div className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest text-muted border-b border-divider/50 mb-1 flex items-center justify-between">
                   <span>FILTER ROLE</span>
-                  <span className="text-[9px] text-blue-accent">8 CATEGORIES</span>
+                  <span className="text-[9px] text-blue-accent">{roleFiltersList.length} CATEGORIES</span>
                 </div>
-                {roleFilters.map((filter) => (
+                {roleFiltersList.map((filter) => (
                   <button
                     key={filter.id}
                     role="option"
@@ -245,6 +271,7 @@ export default function WorkGrid() {
                   key={categoryId}
                   number={String(index + 1).padStart(2, '0')}
                   category={categoryId}
+                  categoryConfig={workCategoriesMap[categoryId]}
                   works={group.works}
                   isOpen={isOpen}
                   isLoaded={isLoaded}

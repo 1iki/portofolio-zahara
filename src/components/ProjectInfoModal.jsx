@@ -4,6 +4,8 @@ import { X, Play, ExternalLink, Calendar, Building, User, Layers, Tag } from 'lu
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { useSound } from '../context/SoundContext';
 import { resolveThumbnail, hasPlayableMedia } from '../lib/utils';
+import MediaGallery from './MediaGallery';
+import { normalizeMedia } from '../lib/mediaUtils';
 
 export default function ProjectInfoModal({ work, onClose, onWatchVideo }) {
   const prefersReducedMotion = useReducedMotion();
@@ -12,7 +14,15 @@ export default function ProjectInfoModal({ work, onClose, onWatchVideo }) {
   
   const thumbnailSrc = resolveThumbnail(work);
   const [imageError, setImageError] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
   const isPlayable = hasPlayableMedia(work);
+
+  const mediaList = normalizeMedia(work, thumbnailSrc);
+
+  // Reset active slide index when modal work item changes
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [work?.id]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -100,16 +110,15 @@ export default function ProjectInfoModal({ work, onClose, onWatchVideo }) {
 
           {/* Scrollable Content Area */}
           <div className="p-6 overflow-y-auto space-y-6">
-            {/* Uncropped Project Image Display (Aspect Ratio Preserved) */}
-            {thumbnailSrc && !imageError && (
-              <div className="w-full max-h-[45vh] bg-ink/90 rounded-sm overflow-hidden border border-divider flex items-center justify-center p-3 relative">
-                <img
-                  src={thumbnailSrc}
-                  alt={work.title}
-                  className="max-h-[40vh] w-auto h-auto object-contain rounded-sm shadow-md"
-                  onError={() => setImageError(true)}
-                />
-              </div>
+            {/* Multi-Image Gallery Presentation */}
+            {mediaList.length > 0 && (
+              <MediaGallery
+                media={mediaList}
+                activeIndex={activeIndex}
+                onIndexChange={setActiveIndex}
+                title={work.title}
+                showWatermark={false}
+              />
             )}
 
             {/* Title & Output Badge */}

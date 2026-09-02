@@ -172,6 +172,23 @@ export const works = [
     link: null,
     mediaType: "image",
     thumbnail: "/projects/happy-science.webp",
+    media: [
+      {
+        src: "/projects/happy-science.webp",
+        alt: "Happy Science - Dokumentasi Produksi",
+        aspectRatio: "4 / 5"
+      },
+      {
+        src: "/projects/pola-makan-pintar-pompi.webp",
+        alt: "Happy Science - Talent Coordination Set",
+        aspectRatio: "16 / 9"
+      },
+      {
+        src: "/projects/ngekost-bukan-kabur.webp",
+        alt: "Happy Science - Rehearsal Episode",
+        aspectRatio: "4 / 5"
+      }
+    ],
     videoUrl: null,
     externalUrl: null,
     organization: "Politeknik Negeri Media Kreatif",
@@ -196,6 +213,23 @@ export const works = [
     link: null,
     mediaType: "image",
     thumbnail: "/projects/ngekost-bukan-kabur.webp",
+    media: [
+      {
+        src: "/projects/ngekost-bukan-kabur.webp",
+        alt: "Ngekost Bukan Kabur - Script Continuity Sheet",
+        aspectRatio: "4 / 5"
+      },
+      {
+        src: "/projects/rri-bogor-produksi-berita-digital.webp",
+        alt: "Ngekost Bukan Kabur - Scene Take Recording",
+        aspectRatio: "16 / 9"
+      },
+      {
+        src: "/projects/rri-bogor-creative-content.webp",
+        alt: "Ngekost Bukan Kabur - Location Set Kost",
+        aspectRatio: "9 / 16"
+      }
+    ],
     videoUrl: null,
     externalUrl: null,
     organization: "Politeknik Negeri Media Kreatif",

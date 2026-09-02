@@ -25,6 +25,7 @@ import { cn } from '../lib/utils';
 export default function WorkSection({
   number,
   category,
+  categoryConfig,
   works,
   isOpen = false,
   isLoaded = false,
@@ -34,15 +35,12 @@ export default function WorkSection({
   onSelectInfo,
   children,
 }) {
-  const config = workCategories[category];
+  const config = categoryConfig || workCategories[category] || {
+    label: (category || 'Kategori Karya').replace(/[-_]/g, ' ').toUpperCase(),
+    subtitle: 'Kategori Produksi Karya',
+  };
   const prefersReducedMotion = useReducedMotion();
 
-  if (!config) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn(`WorkSection: unknown category "${category}"`);
-    }
-    return null;
-  }
 
   // Determine whether card grid should be mounted in DOM
   // On desktop (!isMobile): ALWAYS mounted

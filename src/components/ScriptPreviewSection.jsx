@@ -1,21 +1,58 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Eye, Info, Lock } from 'lucide-react';
-import { scripts, scriptCategories, scriptGroupConfig } from '../data/scripts';
+import { getScripts, subscribeToDataChanges } from '../lib/contentService';
+import { scriptCategories, scriptGroupConfig } from '../data/scriptTaxonomy';
 import ScriptModal from './ScriptModal';
 import { TiledScriptWatermark } from './WatermarkOverlay';
 import { useSound } from '../context/SoundContext';
 import { cn } from '../lib/utils';
 
 export default function ScriptPreviewSection() {
+  const [scriptsList, setScriptsList] = useState([]);
   const [activeFilter, setActiveFilter] = useState('all');
   const [selectedScript, setSelectedScript] = useState(null);
   const { playClick } = useSound();
 
+  const loadScripts = async () => {
+    try {
+      const data = await getScripts();
+      setScriptsList(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('[ScriptPreviewSection] Failed to load scripts:', err);
+    }
+  };
+
+  useEffect(() => {
+    loadScripts();
+    const unsubscribe = subscribeToDataChanges(() => {
+      loadScripts();
+    });
+    return unsubscribe;
+  }, []);
+
   const filteredScripts = useMemo(() => {
-    if (activeFilter === 'all') return scripts;
-    return scripts.filter((s) => s.category === activeFilter);
-  }, [activeFilter]);
+    if (activeFilter === 'all') return scriptsList;
+    return scriptsList.filter((s) => s.category === activeFilter);
+  }, [scriptsList, activeFilter]);
+
+  const dynamicScriptCategories = useMemo(() => {
+    const categoriesMap = new Map();
+    scriptCategories.forEach((cat) => {
+      categoriesMap.set(cat.id, cat);
+    });
+
+    scriptsList.forEach((script) => {
+      if (script.category && !categoriesMap.has(script.category)) {
+        categoriesMap.set(script.category, {
+          id: script.category,
+          label: script.category.replace(/[-_]/g, ' ').toUpperCase(),
+        });
+      }
+    });
+
+    return Array.from(categoriesMap.values());
+  }, [scriptsList]);
 
   // Group filtered scripts by category (same pattern as WorkGrid groupedCategories)
   const groupedScripts = useMemo(() => {
@@ -25,10 +62,14 @@ export default function ScriptPreviewSection() {
       acc[cat].push(script);
       return acc;
     }, {});
-    // Return in config order
-    return Object.entries(scriptGroupConfig)
-      .filter(([key]) => grouped[key])
-      .map(([key, config]) => ({ key, config, items: grouped[key] }));
+    return Object.entries(grouped).map(([key, items]) => ({
+      key,
+      config: scriptGroupConfig[key] || {
+        label: key.replace(/[-_]/g, ' ').toUpperCase(),
+        subtitle: 'Naskah Pilihan',
+      },
+      items,
+    }));
   }, [filteredScripts]);
 
   const handleFilterClick = (catId) => {
@@ -47,7 +88,7 @@ export default function ScriptPreviewSection() {
 
         {/* Filter Chips — identical pill style to Karya */}
         <div className="flex flex-wrap items-center gap-2">
-          {scriptCategories.map((cat) => (
+          {dynamicScriptCategories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => handleFilterClick(cat.id)}
@@ -114,18 +155,28 @@ export default function ScriptPreviewSection() {
                 >
                   <TiledScriptWatermark opacity={0.18} />
                   <img
-                    src={script.thumbnailUrl}
+                    src={script.previewImageUrl || script.thumbnailUrl || '/naskah/salah-pintu-ep01.png'}
                     alt={`Preview naskah ${script.title}`}
                     className="absolute inset-0 w-full h-full object-cover opacity-85 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none select-none"
                     draggable={false}
                     loading="lazy"
+                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/naskah/salah-pintu-ep01.png'; }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-navy-deep/80 via-transparent to-transparent pointer-events-none" />
 
-                  {/* Status Badge — top-right dot+label, identical to WorkCard */}
+                  {/* Status Badge — top-right dot+label */}
                   <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
-                    <div className="w-2 h-2 rounded-full bg-blue-accent/70" />
-                    <span className="text-[9px] font-mono tracking-widest text-ivory/70">WATERMARKED</span>
+                    {script.pdfUrl ? (
+                      <>
+                        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        <span className="text-[9px] font-mono tracking-widest text-emerald-300 font-semibold">PDF CLOUDINARY</span>
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-2 h-2 rounded-full bg-blue-accent/70" />
+                        <span className="text-[9px] font-mono tracking-widest text-ivory/70">WATERMARKED</span>
+                      </>
+                    )}
                   </div>
 
                   {/* Excerpt badge — bottom of thumbnail */}

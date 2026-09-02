@@ -1,5 +1,6 @@
 export const education = [
   {
+    id: "edu-polimedia",
     institution: "Politeknik Negeri Media Kreatif Jakarta",
     program: "Program Studi Penyiaran – Jurusan Ilmu Komunikasi",
     date: "Jakarta, Agustus 2023 – Agustus 2026",
@@ -10,6 +11,7 @@ export const education = [
     gpaNote: null,
   },
   {
+    id: "edu-smk67",
     institution: "SMK Negeri 67 Jakarta",
     program: "Jurusan Desain Komunikasi Visual",
     date: "Jakarta, Juli 2020 – Juli 2023",

@@ -1,15 +1,29 @@
-import React from 'react';
-import { education } from '../data/education';
+import React, { useState, useEffect } from 'react';
+import { getEducation, subscribeToDataChanges } from '../lib/contentService';
 import { Award } from 'lucide-react';
 
 export default function About() {
+  const [educationList, setEducationList] = useState([]);
+
+  const loadEducation = async () => {
+    try {
+      const data = await getEducation();
+      setEducationList(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('[About] Failed to load education:', err);
+    }
+  };
+
+  useEffect(() => {
+    loadEducation();
+    const unsubscribe = subscribeToDataChanges(() => {
+      loadEducation();
+    });
+    return unsubscribe;
+  }, []);
+
   const awards = [
     {
-      //   title: "IPK Terbaik se-Program Studi Penyiaran",
-      //   detail: "Yudisium — IPK 3.74",
-      //   date: "19 Agustus 2026",
-      // },
-      // {
       title: "Karya Perdana Angkatan 12 Terfavorit",
       detail: "Broadcast Award 2023 — Asisten Produser",
       date: "20 November 2023",
@@ -54,7 +68,7 @@ export default function About() {
             </h3>
 
             <div className="flex flex-col gap-8">
-              {education.map((edu, idx) => (
+              {educationList.map((edu, idx) => (
                 <div key={idx} className="border-l border-divider ml-2 pl-6 relative">
                   <div className={`absolute w-2 h-2 rounded-full -left-[5px] top-1.5 ${idx === 0 ? 'bg-blue-accent shadow-[0_0_8px_rgba(74,127,232,0.5)]' : 'bg-divider'}`}></div>
                   <div className="flex flex-col gap-2">

@@ -1,21 +1,39 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import {defineConfig} from 'vite';
+import { defineConfig } from 'vite';
+import dotenv from 'dotenv';
+
+// Load .env.local variables into process.env for Vite dev server
+dotenv.config({ path: path.resolve(__dirname, '.env.local') });
 
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      react(),
+      tailwindcss(),
+      {
+        name: 'express-api-middleware',
+        configureServer(server) {
+          server.middlewares.use('/api', async (req, res, next) => {
+            try {
+              const { default: apiApp } = await import('./api/index.js');
+              apiApp(req, res, next);
+            } catch (err) {
+              console.error('[API Middleware Error]', err);
+              next(err);
+            }
+          });
+        },
+      },
+    ],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
       },
     },
     server: {
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
-      // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
   };

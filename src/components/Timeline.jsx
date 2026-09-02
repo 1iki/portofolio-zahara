@@ -1,14 +1,44 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { experience } from '../data/experience';
+import { getExperience, getExperienceCategories, subscribeToDataChanges } from '../lib/contentService';
 import ExperienceSection from './ExperienceSection';
 import ExperienceItem from './ExperienceItem';
 import { useSound } from '../context/SoundContext';
 import { cn } from '../lib/utils';
 
 export default function Timeline() {
+  const [experienceList, setExperienceList] = useState([]);
+  const [expCategoriesMap, setExpCategoriesMap] = useState({});
   const [activeFilter, setActiveFilter] = useState('Semua');
   const { playClick } = useSound();
+
+  const loadData = async () => {
+    try {
+      const [expData, catData] = await Promise.all([
+        getExperience(),
+        getExperienceCategories(),
+      ]);
+      setExperienceList(Array.isArray(expData) ? expData : []);
+
+      if (Array.isArray(catData)) {
+        const catMap = {};
+        catData.forEach((c) => {
+          catMap[c.id] = { label: c.label, subtitle: c.subtitle };
+        });
+        setExpCategoriesMap(catMap);
+      }
+    } catch (err) {
+      console.error('[Timeline] Failed to load timeline data:', err);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+    const unsubscribe = subscribeToDataChanges(() => {
+      loadData();
+    });
+    return unsubscribe;
+  }, []);
 
   const filterOptions = [
     { id: 'Semua', label: 'SEMUA' },
@@ -18,11 +48,11 @@ export default function Timeline() {
 
   // ── Step 1: Filter by category ──────────────────────────────────
   const filteredExperiences = useMemo(() => {
-    return experience.filter((item) => {
+    return experienceList.filter((item) => {
       if (activeFilter === 'Semua') return true;
       return item.type === activeFilter;
     });
-  }, [activeFilter]);
+  }, [experienceList, activeFilter]);
 
   // ── Step 2: Group by type, compute latest endDate per group, & sort
   const groupedCategories = useMemo(() => {
@@ -133,6 +163,7 @@ export default function Timeline() {
                   key={group.type}
                   number={String(index + 1).padStart(2, '0')}
                   type={group.type}
+                  categoryConfig={expCategoriesMap[group.type]}
                 >
                   {group.items.map((item, idx) => (
                     <ExperienceItem

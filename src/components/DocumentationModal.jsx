@@ -1,19 +1,37 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Camera, Video, ExternalLink, ShieldCheck } from 'lucide-react';
-import { CornerPhotoWatermark } from './WatermarkOverlay';
 import { useSound } from '../context/SoundContext';
+import MediaGallery from './MediaGallery';
+import { normalizeMedia } from '../lib/mediaUtils';
 
 /**
  * Documentation (BTS) Viewer Modal
  *
  * Features:
- * - Medium resolution photos with subtle corner watermark badge (~40% opacity).
- * - Unlisted video embeds via YouTube/Vimeo iframe (no direct .mp4 raw file download link).
+ * - Multi-image gallery viewer (MediaGallery) supporting up to 55 images per item.
+ * - Single source-of-truth thumbnail (media[0]).
+ * - High quality presentation with watermark overlay.
+ * - Unlisted video embeds via YouTube/Vimeo iframe.
  * - Right-click deterrence (onContextMenu prevention).
  */
 export default function DocumentationModal({ item, onClose }) {
   const { playClick } = useSound();
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  // Reset active slide index when modal item changes
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [item?.id]);
+
+  // Body scroll lock
+  useEffect(() => {
+    const originalStyle = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -28,11 +46,15 @@ export default function DocumentationModal({ item, onClose }) {
   if (!item) return null;
 
   const isVideo = item.type === 'video';
+  const mediaList = normalizeMedia(item);
 
   return (
     <AnimatePresence>
       <div 
         className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-8 bg-navy-base/90 backdrop-blur-md overflow-y-auto"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="doc-modal-title"
         onClick={onClose}
       >
         <motion.div
@@ -59,7 +81,7 @@ export default function DocumentationModal({ item, onClose }) {
                     DOKUMENTASI RESMI
                   </span>
                 </div>
-                <h3 className="font-display font-semibold text-lg sm:text-xl text-ivory truncate mt-0.5">
+                <h3 id="doc-modal-title" className="font-display font-semibold text-lg sm:text-xl text-ivory truncate mt-0.5">
                   {item.title}
                 </h3>
               </div>
@@ -77,13 +99,12 @@ export default function DocumentationModal({ item, onClose }) {
           {/* Modal Body */}
           <div className="p-4 sm:p-6 overflow-y-auto space-y-6">
 
-            {/* Media Presentation Container */}
-            <div 
-              className="relative w-full rounded-lg border border-divider bg-navy-base overflow-hidden select-none"
-              onContextMenu={(e) => e.preventDefault()}
-            >
-              {isVideo ? (
-                /* Video Embed Presentation — Unlisted YouTube/Vimeo iFrame (No .mp4 raw link) */
+            {/* Media Presentation Gallery */}
+            {isVideo && item.videoEmbedUrl ? (
+              <div 
+                className="relative w-full rounded-lg border border-divider bg-navy-base overflow-hidden select-none"
+                onContextMenu={(e) => e.preventDefault()}
+              >
                 <div className="relative w-full aspect-video bg-navy-base">
                   <iframe
                     src={item.videoEmbedUrl}
@@ -93,20 +114,16 @@ export default function DocumentationModal({ item, onClose }) {
                     allowFullScreen
                   />
                 </div>
-              ) : (
-                /* Photo Presentation — Medium Resolution + Corner Watermark Badge */
-                <div className="relative w-full min-h-[350px] max-h-[550px] flex items-center justify-center bg-navy-base p-2">
-                  <img
-                    src={item.mediaUrl}
-                    alt={`Dokumentasi ${item.title}`}
-                    className="w-full max-h-[520px] object-contain rounded select-none pointer-events-none"
-                    draggable={false}
-                  />
-                  {/* Subtle Corner Watermark Overlay (~40% opacity) */}
-                  <CornerPhotoWatermark />
-                </div>
-              )}
-            </div>
+              </div>
+            ) : (
+              <MediaGallery
+                media={mediaList}
+                activeIndex={activeIndex}
+                onIndexChange={setActiveIndex}
+                title={item.title}
+                showWatermark={!isVideo}
+              />
+            )}
 
             {/* Metadata Detail Bar */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-lg bg-navy-base border border-divider/60 text-xs font-mono">

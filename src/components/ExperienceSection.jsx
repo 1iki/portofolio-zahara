@@ -6,15 +6,11 @@ import { experienceCategories } from '../data/experienceCategories';
  * ExperienceSection — Renders a dynamically sorted experience category group section.
  * Includes section number (01, 02, ...), title, subtitle, divider, and items.
  */
-export default function ExperienceSection({ number, type, children }) {
-  const config = experienceCategories[type];
-
-  if (!config) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn(`ExperienceSection: unknown experience category "${type}"`);
-    }
-    return null;
-  }
+export default function ExperienceSection({ number, type, categoryConfig, children }) {
+  const config = categoryConfig || experienceCategories[type] || {
+    label: (type || 'Pengalaman').replace(/[-_]/g, ' ').toUpperCase(),
+    subtitle: 'Pengalaman & Rekam Jejak',
+  };
 
   return (
     <motion.section

@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'motion/react';
-import { documentations } from '../data/documentation';
+import { getDocumentation, subscribeToDataChanges } from '../lib/contentService';
 import DocumentationModal from './DocumentationModal';
 import { CornerPhotoWatermark } from './WatermarkOverlay';
 import { useSound } from '../context/SoundContext';
 import { cn } from '../lib/utils';
+import { resolvePrimaryThumbnail } from '../lib/mediaUtils';
 
 /**
  * Helper to parse aspect ratio string (e.g. "4 / 5" or "16 / 9") into width/height numerical ratio.
@@ -22,8 +23,8 @@ function parseAspectRatio(ratioStr) {
  * Helper to calculate height factor relative to column width (height = width * (1 / ratio)).
  */
 function getHeightFactor(ratioStr) {
-  const ratio = parseAspectRatio(ratioStr);
-  return 1 / ratio;
+  const numericRatio = parseAspectRatio(ratioStr);
+  return 1 / numericRatio;
 }
 
 /**
@@ -75,9 +76,28 @@ function useColumnCount() {
  * - Keyboard accessible (Escape closes lightbox)
  */
 export default function DocumentationSection() {
+  const [docList, setDocList] = useState([]);
   const [selectedDoc, setSelectedDoc] = useState(null);
   const { playClick } = useSound();
   const columnCount = useColumnCount();
+
+  const loadDocs = async () => {
+    try {
+      const data = await getDocumentation();
+      setDocList(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('[DocumentationSection] Failed to load docs:', err);
+    }
+  };
+
+  // Subscribe to real-time CMS mutations
+  useEffect(() => {
+    loadDocs();
+    const unsubscribe = subscribeToDataChanges(() => {
+      loadDocs();
+    });
+    return unsubscribe;
+  }, []);
 
   // Shortest-column placement algorithm
   const columns = useMemo(() => {
@@ -86,7 +106,7 @@ export default function DocumentationSection() {
     const heights = new Array(numCols).fill(0);
     const gapFactor = 0.06; // vertical gap allowance relative to column width
 
-    documentations.forEach((item) => {
+    docList.forEach((item) => {
       const itemHeightFactor = getHeightFactor(item.aspectRatio);
 
       // Find column with minimum total height
@@ -129,7 +149,7 @@ export default function DocumentationSection() {
           <div key={colIdx} className="flex flex-col gap-3 sm:gap-4">
             {colItems.map((item, idx) => {
               const isVideo = item.type === 'video';
-              const thumbSrc = isVideo ? item.thumbnailUrl : (item.mediaUrl || item.thumbnailUrl);
+              const thumbSrc = resolvePrimaryThumbnail(item, isVideo ? item.thumbnailUrl : (item.mediaUrl || item.thumbnailUrl));
 
               return (
                 <motion.button

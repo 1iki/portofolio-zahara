@@ -127,10 +127,11 @@ export default function ScriptModal({ script, onClose }) {
               {/* Render Script Preview as Image/SVG Asset */}
               <div className="relative w-full flex justify-center bg-navy-base p-2 sm:p-4 min-h-[450px]">
                 <img
-                  src={script.previewImageUrl}
+                  src={script.previewImageUrl || script.thumbnailUrl || '/naskah/salah-pintu-ep01.png'}
                   alt={`Cuplikan naskah ${script.title} oleh Zahara Elhusna Barok`}
                   className="w-full max-w-2xl h-auto object-contain rounded shadow-lg select-none pointer-events-none"
                   draggable={false}
+                  onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/naskah/salah-pintu-ep01.png'; }}
                 />
 
                 {/* Bottom Gradient Fade-Out Mask */}
@@ -149,12 +150,23 @@ export default function ScriptModal({ script, onClose }) {
                     Tertarik Membaca Naskah Lengkap?
                   </h4>
                   <p className="text-xs text-muted max-w-lg mx-auto">
-                    Dokumen naskah lengkap (versi PDF resmi/full draft) tersedia atas permintaan untuk keperluan seleksi kerja, rekrutmen, atau penawaran kerja sama.
+                    Dokumen naskah lengkap (versi PDF resmi/full draft) tersedia di Cloudinary atau atas permintaan untuk keperluan seleksi kerja.
                   </p>
                 </div>
 
-                {/* CTA Contact Buttons */}
+                {/* CTA Contact & PDF Buttons */}
                 <div className="flex flex-wrap justify-center gap-3 pt-2">
+                  {script.pdfUrl && (
+                    <a
+                      href={script.pdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-5 py-2 rounded-full bg-amber-500 hover:bg-amber-600 text-navy-base font-bold text-xs font-mono transition-all shadow-md"
+                    >
+                      <FileText size={15} />
+                      Buka Dokumen PDF (Cloudinary)
+                    </a>
+                  )}
                   <a
                     href={`mailto:${WATERMARK_CONFIG.contactEmail}?subject=Permintaan Naskah Lengkap: ${encodeURIComponent(script.title)}`}
                     className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-accent text-navy-base font-semibold text-xs font-mono hover:bg-blue-accent/90 transition-colors shadow-md"
@@ -170,15 +182,6 @@ export default function ScriptModal({ script, onClose }) {
                   >
                     <Linkedin size={14} />
                     Hubungi via LinkedIn
-                  </a>
-                  <a
-                    href={WATERMARK_CONFIG.instagramUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2 rounded-full border border-divider hover:border-ivory text-ivory text-xs font-mono transition-colors bg-navy-base"
-                  >
-                    <Instagram size={14} />
-                    Instagram DM
                   </a>
                 </div>
               </div>

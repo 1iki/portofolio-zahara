@@ -41,9 +41,30 @@ export const documentations = [
     date: "September 2025",
     mediaUrl: "/projects/happy-science.webp",
     thumbnailUrl: "/projects/happy-science.webp",
+    media: [
+      {
+        src: "/projects/happy-science.webp",
+        alt: "Dokumentasi Proses Shooting & Directing Jejak Flona",
+        aspectRatio: "4 / 5"
+      },
+      {
+        src: "/projects/rri-bogor-creative-content.webp",
+        alt: "Proses produksi Jejak Flona",
+        aspectRatio: "9 / 16"
+      },
+      {
+        src: "/projects/rri-bogor-produksi-berita-digital.webp",
+        alt: "Koordinasi produksi Jejak Flona",
+        aspectRatio: "16 / 9"
+      },
+      {
+        src: "/projects/ngekost-bukan-kabur.webp",
+        alt: "Pengarahan adegan Jejak Flona",
+        aspectRatio: "4 / 5"
+      }
+    ],
     description: "Dokumentasi proses pengarahan talent anak-anak dan koordinasi tim teknis kamera saat pengambilan gambar variety show edukasi anak Jejak Flona.",
     tags: ["BTS Shooting", "Variety Show", "Polimedia"],
-    // Intrinsic: 565×800 (0.706) → Supported Portrait ratio 4:5
     aspectRatio: "4 / 5",
   },
   {
@@ -57,9 +78,25 @@ export const documentations = [
     date: "Januari 2026",
     mediaUrl: "/projects/rri-bogor-creative-content.webp",
     thumbnailUrl: "/projects/rri-bogor-creative-content.webp",
+    media: [
+      {
+        src: "/projects/rri-bogor-creative-content.webp",
+        alt: "Produksi Sitkom Salah Pintu KMB RRI Bogor",
+        aspectRatio: "9 / 16"
+      },
+      {
+        src: "/projects/rri-bogor-produksi-berita-digital.webp",
+        alt: "Suasana pengarahan naskah adegan Sitkom",
+        aspectRatio: "16 / 9"
+      },
+      {
+        src: "/projects/happy-science.webp",
+        alt: "Rehearsal ekspresi talent sebelum take video",
+        aspectRatio: "4 / 5"
+      }
+    ],
     description: "Suasana pengarahan naskah adegan dan rehearsal ekspresi talent sebelum take video episode Ramadan Comedy Series di RRI Bogor.",
     tags: ["BTS Sitkom", "RRI Bogor", "Talent Coordination"],
-    // Intrinsic: 240×480 (0.500) → Supported Vertical Story ratio 9:16
     aspectRatio: "9 / 16",
   },
   {

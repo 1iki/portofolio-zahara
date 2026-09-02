@@ -5,6 +5,7 @@ import { usePointerType } from '../hooks/usePointerType';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { useSound } from '../context/SoundContext';
 import { resolveThumbnail, getYouTubeThumbnailFrames, getYouTubeThumbnailFallback, hasPlayableMedia } from '../lib/utils';
+import { resolvePrimaryThumbnail } from '../lib/mediaUtils';
 import ScrubDeck from './ScrubDeck';
 
 export default function WorkCard({ work, onSelectVideo, onSelectInfo }) {
@@ -14,7 +15,7 @@ export default function WorkCard({ work, onSelectVideo, onSelectInfo }) {
   const [isFocused, setIsFocused] = useState(false);
   const [scrubProgress, setScrubProgress] = useState(0);
   const [currentFrame, setCurrentFrame] = useState(0);
-  const [thumbnailSrc, setThumbnailSrc] = useState(() => resolveThumbnail(work));
+  const [thumbnailSrc, setThumbnailSrc] = useState(() => resolvePrimaryThumbnail(work, resolveThumbnail(work)));
   const [imageErrorCount, setImageErrorCount] = useState(0);
   const prefersReducedMotion = useReducedMotion();
   const isCoarse = usePointerType();

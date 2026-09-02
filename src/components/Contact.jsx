@@ -1,7 +1,32 @@
-import React from 'react';
-import { contact } from '../data/contact';
+import React, { useState, useEffect } from 'react';
+import { getContact, subscribeToDataChanges } from '../lib/contentService';
 
 export default function Contact() {
+  const [contactData, setContactData] = useState({
+    linkedin: 'https://linkedin.com/in/zahara-elhusna-barok/',
+    instagram: 'https://instagram.com/zhr.elhusna',
+    email: 'zaharaelhusnab@gmail.com',
+  });
+
+  const loadContact = async () => {
+    try {
+      const data = await getContact();
+      if (data) {
+        setContactData(data);
+      }
+    } catch (err) {
+      console.error('[Contact] Failed to load contact:', err);
+    }
+  };
+
+  useEffect(() => {
+    loadContact();
+    const unsubscribe = subscribeToDataChanges(() => {
+      loadContact();
+    });
+    return unsubscribe;
+  }, []);
+
   return (
     <footer className="py-24 border-t border-divider bg-navy-base px-6 relative overflow-hidden" id="kontak">
       {/* Background Decorative Grid */}
@@ -22,18 +47,21 @@ export default function Contact() {
         </div>
 
         <div className="flex flex-wrap justify-center gap-4">
-          {/* <a href={contact.whatsapp} target="_blank" rel="noopener noreferrer" className="px-6 py-3 rounded-full border border-divider hover:border-ivory text-sm font-mono tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-accent focus-visible:ring-offset-2 focus-visible:ring-offset-navy-base">
-            WHATSAPP
-          </a> */}
-          <a href={contact.linkedin} target="_blank" rel="noopener noreferrer" className="px-6 py-3 rounded-full border border-divider hover:border-ivory text-sm font-mono tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-accent focus-visible:ring-offset-2 focus-visible:ring-offset-navy-base">
-            LINKEDIN
-          </a>
-          <a href={contact.instagram} target="_blank" rel="noopener noreferrer" className="px-6 py-3 rounded-full border border-divider hover:border-ivory text-sm font-mono tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-accent focus-visible:ring-offset-2 focus-visible:ring-offset-navy-base">
-            INSTAGRAM
-          </a>
-          <a href={`mailto:${contact.email}`} className="px-6 py-3 rounded-full border border-divider hover:border-ivory text-sm font-mono tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-accent focus-visible:ring-offset-2 focus-visible:ring-offset-navy-base">
-            EMAIL
-          </a>
+          {contactData.linkedin && (
+            <a href={contactData.linkedin} target="_blank" rel="noopener noreferrer" className="px-6 py-3 rounded-full border border-divider hover:border-ivory text-sm font-mono tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-accent focus-visible:ring-offset-2 focus-visible:ring-offset-navy-base">
+              LINKEDIN
+            </a>
+          )}
+          {contactData.instagram && (
+            <a href={contactData.instagram} target="_blank" rel="noopener noreferrer" className="px-6 py-3 rounded-full border border-divider hover:border-ivory text-sm font-mono tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-accent focus-visible:ring-offset-2 focus-visible:ring-offset-navy-base">
+              INSTAGRAM
+            </a>
+          )}
+          {contactData.email && (
+            <a href={`mailto:${contactData.email}`} className="px-6 py-3 rounded-full border border-divider hover:border-ivory text-sm font-mono tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-accent focus-visible:ring-offset-2 focus-visible:ring-offset-navy-base">
+              EMAIL
+            </a>
+          )}
         </div>
 
         {/* Footer Base */}

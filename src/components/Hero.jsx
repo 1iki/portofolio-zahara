@@ -2,12 +2,37 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { useSound } from '../context/SoundContext';
-import { contact } from '../data/contact';
+import { getContact, subscribeToDataChanges } from '../lib/contentService';
 import { ChevronDown, RefreshCw, Radio, Tv, Mic2, PenTool } from 'lucide-react';
 
 export default function Hero() {
   const prefersReducedMotion = useReducedMotion();
   const { playClick } = useSound();
+
+  const [contactData, setContactData] = useState({
+    linkedin: 'https://linkedin.com/in/zahara-elhusna-barok/',
+    instagram: 'https://instagram.com/zhr.elhusna',
+    email: 'zaharaelhusnab@gmail.com',
+  });
+
+  const loadContact = async () => {
+    try {
+      const data = await getContact();
+      if (data) {
+        setContactData(data);
+      }
+    } catch (err) {
+      console.error('[Hero] Failed to load contact:', err);
+    }
+  };
+
+  useEffect(() => {
+    loadContact();
+    const unsubscribe = subscribeToDataChanges(() => {
+      loadContact();
+    });
+    return unsubscribe;
+  }, []);
 
   const taglines = [
     { text: "Produser", icon: Tv },
@@ -196,18 +221,21 @@ export default function Hero() {
             </button>
 
             <div className="flex items-center gap-3">
-              {/* <a href={contact.whatsapp} target="_blank" rel="noopener noreferrer" className="px-4 py-2.5 rounded-full border border-divider text-xs font-mono tracking-wide text-muted hover:text-ivory hover:border-ivory/30 transition-colors">
-                WA
-              </a> */}
-              <a href={contact.linkedin} target="_blank" rel="noopener noreferrer" className="px-4 py-2.5 rounded-full border border-divider text-xs font-mono tracking-wide text-muted hover:text-ivory hover:border-ivory/30 transition-colors">
-                LinkedIn
-              </a>
-              <a href={contact.instagram} target="_blank" rel="noopener noreferrer" className="px-4 py-2.5 rounded-full border border-divider text-xs font-mono tracking-wide text-muted hover:text-ivory hover:border-ivory/30 transition-colors">
-                Instagram
-              </a>
-              <a href={`mailto:${contact.email}`} className="px-4 py-2.5 rounded-full border border-divider text-xs font-mono tracking-wide text-muted hover:text-ivory hover:border-ivory/30 transition-colors">
-                EMAIL
-              </a>
+              {contactData.linkedin && (
+                <a href={contactData.linkedin} target="_blank" rel="noopener noreferrer" className="px-4 py-2.5 rounded-full border border-divider text-xs font-mono tracking-wide text-muted hover:text-ivory hover:border-ivory/30 transition-colors">
+                  LinkedIn
+                </a>
+              )}
+              {contactData.instagram && (
+                <a href={contactData.instagram} target="_blank" rel="noopener noreferrer" className="px-4 py-2.5 rounded-full border border-divider text-xs font-mono tracking-wide text-muted hover:text-ivory hover:border-ivory/30 transition-colors">
+                  Instagram
+                </a>
+              )}
+              {contactData.email && (
+                <a href={`mailto:${contactData.email}`} className="px-4 py-2.5 rounded-full border border-divider text-xs font-mono tracking-wide text-muted hover:text-ivory hover:border-ivory/30 transition-colors">
+                  EMAIL
+                </a>
+              )}
             </div>
           </motion.div>
 
