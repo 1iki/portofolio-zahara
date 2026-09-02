@@ -41,6 +41,15 @@ const app = express();
 // 20 MiB binary PDF becomes roughly 26.7 MiB when represented as a data URL.
 app.use(express.json({ limit: '28mb' }));
 
+// Strip /api prefix on Vercel — routes are defined without it (e.g. /auth/login not /api/auth/login).
+// In Vite dev mode the prefix is already stripped by server.middlewares.use('/api', ...).
+app.use((req, res, next) => {
+  if (req.url.startsWith('/api/') || req.url === '/api') {
+    req.url = req.url.replace(/^\/api/, '') || '/';
+  }
+  next();
+});
+
 app.use((req, res, next) => {
   if (req.method === 'GET' && (req.path === '/scripts' || req.path.startsWith('/scripts/'))) {
     res.set('Cache-Control', 'no-store, max-age=0');
