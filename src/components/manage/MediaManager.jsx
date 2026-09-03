@@ -13,7 +13,36 @@ import {
 } from 'lucide-react';
 import { MAX_MEDIA } from '../../lib/mediaUtils';
 import { uploadMediaToCloudinary } from '../../lib/contentService';
+import ComboboxField from './ComboboxField';
 import { cn } from '../../lib/utils';
+
+const ASPECT_RATIO_OPTIONS = [
+  { value: '4 / 5', label: 'Ratio 4:5 (Portrait Standard)' },
+  { value: '16 / 9', label: 'Ratio 16:9 (Landscape Video/Photo)' },
+  { value: '9 / 16', label: 'Ratio 9:16 (Reels / TikTok)' },
+  { value: '1 / 1', label: 'Ratio 1:1 (Square)' },
+];
+
+const MEDIA_TYPE_OPTIONS = [
+  { value: 'image', label: 'Tipe: Foto / Image' },
+  { value: 'video', label: 'Tipe: Video Embed' },
+];
+
+const normalizeAspectRatio = (input) => {
+  if (!input || typeof input !== 'string') return input;
+  const trimmed = input.trim();
+  const match = trimmed.match(/^([1-9]\d*(?:\.\d+)?)\s*[:/]\s*([1-9]\d*(?:\.\d+)?)$/);
+  if (match) {
+    return `${match[1]} / ${match[2]}`;
+  }
+  return trimmed;
+};
+
+const isValidAspectRatio = (input) => {
+  if (!input) return false;
+  const trimmed = input.trim();
+  return /^[1-9]\d*(?:\.\d+)?\s*[/:]\s*[1-9]\d*(?:\.\d+)?$/.test(trimmed);
+};
 
 export default function MediaManager({ mediaList = [], onChange }) {
   const [newUrl, setNewUrl] = useState('');
@@ -94,10 +123,16 @@ export default function MediaManager({ mediaList = [], onChange }) {
       return;
     }
 
+    const finalRatio = normalizeAspectRatio(newAspectRatio);
+    if (!isValidAspectRatio(finalRatio)) {
+      setError('Format Aspect Ratio tidak valid. Gunakan format seperti "21:9" atau "4 / 5".');
+      return;
+    }
+
     const newItem = {
       src: newUrl.trim(),
       alt: newAlt.trim() || `Gambar ${media.length + 1}`,
-      aspectRatio: newAspectRatio,
+      aspectRatio: finalRatio,
       type: newMediaType,
       ...(newMediaType === 'video' && newVideoUrl.trim() ? { videoEmbedUrl: newVideoUrl.trim() } : {})
     };
@@ -219,27 +254,37 @@ export default function MediaManager({ mediaList = [], onChange }) {
 
         <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
           <div className="flex flex-wrap items-center gap-3">
-            <select
+            <ComboboxField
               value={newAspectRatio}
-              onChange={(e) => setNewAspectRatio(e.target.value)}
-              disabled={isMaxReached}
-              className="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-700 focus:border-blue-600 outline-none font-medium"
-            >
-              <option value="4 / 5">Ratio 4:5 (Portrait Standard)</option>
-              <option value="16 / 9">Ratio 16:9 (Landscape Video/Photo)</option>
-              <option value="9 / 16">Ratio 9:16 (Reels / TikTok)</option>
-              <option value="1 / 1">Ratio 1:1 (Square)</option>
-            </select>
+              onChange={(val) => {
+                if (!val) {
+                  setNewAspectRatio('4 / 5');
+                  return;
+                }
+                const normalized = normalizeAspectRatio(val);
+                if (!isValidAspectRatio(normalized)) {
+                  setError('Format Aspect Ratio tidak valid. Gunakan format seperti "21:9" atau "4 / 5".');
+                  return;
+                }
+                setError(null);
+                setNewAspectRatio(normalized);
+              }}
+              defaultOptions={ASPECT_RATIO_OPTIONS}
+              placeholder="Ratio..."
+              creatable={true}
+              compact
+              className="w-48"
+            />
 
-            <select
+            <ComboboxField
               value={newMediaType}
-              onChange={(e) => setNewMediaType(e.target.value)}
-              disabled={isMaxReached}
-              className="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-700 focus:border-blue-600 outline-none font-medium"
-            >
-              <option value="image">Tipe: Foto / Image</option>
-              <option value="video">Tipe: Video Embed</option>
-            </select>
+              onChange={(val) => setNewMediaType(val || 'image')}
+              defaultOptions={MEDIA_TYPE_OPTIONS}
+              placeholder="Tipe..."
+              creatable={false}
+              compact
+              className="w-44"
+            />
           </div>
 
           <button

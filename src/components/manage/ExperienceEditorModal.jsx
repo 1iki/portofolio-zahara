@@ -5,6 +5,11 @@ import ArrayFieldEditor from './ArrayFieldEditor';
 import MetricsEditor from './MetricsEditor';
 import { createExperience, updateExperience, createOption, getExperienceCategories, createExperienceCategory } from '../../lib/contentService';
 
+const EXP_TYPE_OPTIONS = [
+  { value: 'magang', label: 'Magang / Pengalaman Profesional' },
+  { value: 'organisasi', label: 'Organisasi / Kepemimpinan' },
+];
+
 export default function ExperienceEditorModal({ experience = null, onClose, onSuccess }) {
   const isEditing = Boolean(experience);
 
@@ -74,6 +79,7 @@ export default function ExperienceEditorModal({ experience = null, onClose, onSu
         await createOption('institution', payload.organization).catch(() => {});
       }
       if (payload.type?.trim()) {
+        await createOption('experience_type', payload.type).catch(() => {});
         try {
           const existingCats = await getExperienceCategories();
           const exists = Array.isArray(existingCats) && existingCats.some((c) => c.id === payload.type);
@@ -185,17 +191,14 @@ export default function ExperienceEditorModal({ experience = null, onClose, onSu
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block font-medium text-xs text-slate-700 mb-1">Tipe Pengalaman</label>
-                <select
-                  value={formData.type}
-                  onChange={(e) => handleChange('type', e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:border-blue-600 outline-none"
-                >
-                  <option value="magang">Magang / Pengalaman Profesional</option>
-                  <option value="organisasi">Organisasi / Kepemimpinan</option>
-                </select>
-              </div>
+              <ComboboxField
+                label="Tipe Pengalaman"
+                type="experience_type"
+                value={formData.type}
+                onChange={(val) => handleChange('type', val)}
+                placeholder="Pilih atau ketik tipe..."
+                defaultOptions={EXP_TYPE_OPTIONS}
+              />
 
               <div>
                 <label className="block font-medium text-xs text-slate-700 mb-1">Lokasi / Kota</label>

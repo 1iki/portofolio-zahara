@@ -14,31 +14,42 @@ import { cn } from '../../lib/utils';
 // initial-options effect on every render for callers without local options.
 const EMPTY_OPTIONS = [];
 
+const normalizeOption = (opt) => {
+  if (typeof opt === 'string') {
+    return { label: opt, value: opt, normalizedValue: opt.toLowerCase().trim() };
+  }
+  const val = opt.value !== undefined ? String(opt.value) : (opt.label || '');
+  const lbl = opt.label !== undefined ? String(opt.label) : val;
+  const norm = opt.normalizedValue || val.toLowerCase().trim().replace(/\s+/g, ' ');
+  return { label: lbl, value: val, normalizedValue: norm };
+};
+
 /**
  * ComboboxField — Professional Local-First & Debounced Combobox / Autocomplete Component
  * 
  * UX Standards:
- * - Local-first search: Instant local filtering on client options
- * - Debounced remote search: 350ms debounce before executing network queries
- * - Remote Search Threshold: Minimum query length = 3 characters before remote API query
- * - AbortController & Stale Response Protection: Cancels in-flight requests on query change
- * - Separate Input State & Selection State: `searchQuery` (local input) vs `value` (selected option)
- * - Stable Dropdown: Preserves previous results during fetch, prevents layout jumps or closing
- * - Non-blocking UI: Compact inline micro-spinner, zero full-screen or global loading triggers
- * - Accessibility: ARIA combobox semantics, full keyboard navigation (Up, Down, Enter, Esc, Tab)
+ * - Supports both taxonomy-backed options (MongoDB) and static/local option arrays
+ * - Accepts option objects `{ label, value }` or simple string arrays `['a', 'b']`
+ * - Supports custom user input creation (Creatable Combobox)
+ * - Accessible combobox semantics, full keyboard navigation (Up, Down, Enter, Esc, Tab)
  */
 export default function ComboboxField({
   label,
   required = false,
-  type, // MongoDB taxonomy key, e.g. institution | script_category | script_format | script_role
+  type, // MongoDB taxonomy key (optional), e.g. institution | script_category | production_category
   value = '',
   onChange,
   placeholder = 'Pilih atau cari...',
   defaultOptions = EMPTY_OPTIONS,
-  allowCreate = true,
-  createOnSelect = false,
-  className = ''
+  creatable = true,
+  allowCreate, // Alias for creatable
+  createOnSelect = true,
+  persistent = true,
+  className = '',
+  buttonClassName = '',
+  compact = false,
 }) {
+  const isCreatableAllowed = allowCreate !== undefined ? allowCreate : creatable;
   const [isOpen, setIsOpen] = useState(false);
   const [options, setOptions] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -54,13 +65,31 @@ export default function ComboboxField({
   const abortControllerRef = useRef(null);
   const requestIdRef = useRef(0);
 
-  // Initial fetch of default options on mount or type change
+  // Serialize defaultOptions safely to prevent array reference instability from triggering re-fetches
+  const defaultOptionsKey = useMemo(() => {
+    if (!defaultOptions || !Array.isArray(defaultOptions)) return '';
+    return defaultOptions.map((o) => (typeof o === 'string' ? o : `${o?.value}:${o?.label}`)).join('|');
+  }, [defaultOptions]);
+
+  // Normalize default options
+  const normalizedDefaults = useMemo(() => {
+    return (defaultOptions || []).map(normalizeOption);
+    // eslint-disable-next-deps
+  }, [defaultOptionsKey]);
+
+  // Initial fetch of options on mount or type change
   const fetchInitialOptions = useCallback(async () => {
+    if (!type) {
+      setOptions(normalizedDefaults);
+      return;
+    }
+
     setIsLoading(true);
     setFetchError(null);
     try {
       const data = await getOptions(type, '');
-      const merged = [...defaultOptions, ...(data || [])].reduce((acc, option) => {
+      const remoteNormalized = (data || []).map(normalizeOption);
+      const merged = [...normalizedDefaults, ...remoteNormalized].reduce((acc, option) => {
         const key = option.normalizedValue || option.value?.trim().toLowerCase();
         if (key && !acc.some((item) => (item.normalizedValue || item.value?.trim().toLowerCase()) === key)) {
           acc.push(option);
@@ -71,10 +100,11 @@ export default function ComboboxField({
     } catch (err) {
       console.error('[ComboboxField] Initial fetch options error:', err);
       setFetchError('Gagal memuat opsi');
+      setOptions(normalizedDefaults);
     } finally {
       setIsLoading(false);
     }
-  }, [type, defaultOptions]);
+  }, [type, normalizedDefaults]);
 
   useEffect(() => {
     fetchInitialOptions();
@@ -82,9 +112,7 @@ export default function ComboboxField({
 
   // Debounced Remote Search (350ms, Min length: 3 chars)
   const performRemoteSearch = useCallback(async (query, requestId) => {
-    // The input may have changed while this callback was waiting in the
-    // debounce timer. Never begin an obsolete request.
-    if (!query || query.trim().length < 3 || requestId !== requestIdRef.current) return;
+    if (!type || !query || query.trim().length < 3 || requestId !== requestIdRef.current) return;
 
     abortControllerRef.current = new AbortController();
     const controller = abortControllerRef.current;
@@ -95,13 +123,13 @@ export default function ComboboxField({
     try {
       const data = await getOptions(type, query.trim(), controller.signal);
 
-      // Protect against stale responses
       if (requestId !== requestIdRef.current) return;
-      if (data === null) return; // Request aborted
+      if (data === null) return;
 
-      // Merge new remote results with existing options stably without flickering
+      const remoteNormalized = (data || []).map(normalizeOption);
+
       setOptions((prev) => {
-        const merged = [...prev, ...(data || [])].reduce((acc, option) => {
+        const merged = [...prev, ...remoteNormalized].reduce((acc, option) => {
           const key = option.normalizedValue || option.value?.trim().toLowerCase();
           if (key && !acc.some((item) => (item.normalizedValue || item.value?.trim().toLowerCase()) === key)) {
             acc.push(option);
@@ -147,7 +175,7 @@ export default function ComboboxField({
     }
   }, [isOpen]);
 
-  // Handle Search Input Change with 350ms Debounce and Minimum Threshold (3 chars)
+  // Handle Search Input Change
   const handleSearchInputChange = (e) => {
     const text = e.target.value;
     setSearchQuery(text);
@@ -155,9 +183,6 @@ export default function ComboboxField({
 
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
 
-    // Invalidate and abort immediately, rather than after the next 350ms
-    // debounce window. This keeps an older response from becoming authoritative
-    // while the user is still typing a newer query.
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
@@ -165,9 +190,7 @@ export default function ComboboxField({
     const requestId = ++requestIdRef.current;
 
     const trimmed = text.trim();
-    // Rule: 0-2 characters -> No API request (instant local filtering)
-    // Rule: 3+ characters -> Debounced 350ms remote search
-    if (trimmed.length >= 3) {
+    if (type && trimmed.length >= 3) {
       debounceTimerRef.current = setTimeout(() => {
         performRemoteSearch(trimmed, requestId);
       }, 350);
@@ -176,7 +199,6 @@ export default function ComboboxField({
     }
   };
 
-  // Cleanup timers & abort controllers on unmount
   useEffect(() => {
     return () => {
       if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
@@ -190,6 +212,7 @@ export default function ComboboxField({
     const q = searchQuery.trim().toLowerCase();
     return options.filter(
       (opt) =>
+        opt.label.toLowerCase().includes(q) ||
         opt.value.toLowerCase().includes(q) ||
         (opt.normalizedValue && opt.normalizedValue.includes(q))
     );
@@ -199,8 +222,16 @@ export default function ComboboxField({
   const exactMatchExists = useMemo(() => {
     if (!searchQuery.trim()) return true;
     const norm = searchQuery.trim().toLowerCase().replace(/\s+/g, ' ');
-    return options.some((opt) => (opt.normalizedValue || opt.value?.trim().toLowerCase()) === norm);
+    return options.some((opt) => (opt.normalizedValue || opt.value?.trim().toLowerCase() || opt.label?.trim().toLowerCase()) === norm);
   }, [options, searchQuery]);
+
+  // Compute label for currently selected value
+  const currentDisplayLabel = useMemo(() => {
+    if (!value && value !== 0) return '';
+    const valStr = String(value);
+    const match = options.find((o) => o.value === valStr || o.value?.toLowerCase() === valStr.toLowerCase());
+    return match ? match.label : valStr;
+  }, [options, value]);
 
   // Selection Handler
   const handleSelectOption = (selectedValue) => {
@@ -210,59 +241,52 @@ export default function ComboboxField({
 
   // Option Creation Handler
   const handleCreateNewOption = async () => {
+    if (isCreating || !isCreatableAllowed) return;
+
     const rawVal = searchQuery.trim();
     if (!rawVal) return;
 
-    const norm = rawVal.toLowerCase().replace(/\s+/g, ' ');
+    const newOptObj = normalizeOption(rawVal);
 
-    if (!createOnSelect) {
-      // 1. Immediately update local options list so newly created option is visible in dropdown
+    if (!type || !createOnSelect) {
       setOptions((prev) => {
         const exists = prev.some(
-          (o) => (o.normalizedValue || o.value?.trim().toLowerCase()) === norm
+          (o) => (o.normalizedValue || o.value?.trim().toLowerCase()) === newOptObj.normalizedValue
         );
         if (exists) return prev;
-        return [
-          ...prev,
-          { type, value: rawVal, normalizedValue: norm }
-        ].sort((a, b) => a.value.localeCompare(b.value));
+        return [...prev, newOptObj].sort((a, b) => a.label.localeCompare(b.label));
       });
 
-      // 2. Persist option to MongoDB backend immediately
-      if (type) {
+      if (type && persistent) {
         createOption(type, rawVal).catch((err) => {
           console.warn('[ComboboxField] Asynchronous option creation warning:', err);
         });
       }
 
-      // 3. Set value in form & close dropdown
       onChange(rawVal);
       setIsOpen(false);
       return;
     }
 
     setIsCreating(true);
+    setFetchError(null);
+
     try {
       const newOpt = await createOption(type, rawVal);
       const createdValue = newOpt?.value || rawVal;
+      const createdOptObj = normalizeOption(newOpt || createdValue);
 
       setOptions((prev) => {
-        const exists = prev.some((o) => (o.normalizedValue || o.value?.trim().toLowerCase()) === (newOpt?.normalizedValue || createdValue.toLowerCase()));
+        const exists = prev.some((o) => (o.normalizedValue || o.value?.trim().toLowerCase()) === createdOptObj.normalizedValue);
         if (exists) return prev;
-        return [...prev, newOpt || { type, value: createdValue, normalizedValue: createdValue.toLowerCase() }].sort((a, b) => a.value.localeCompare(b.value));
+        return [...prev, createdOptObj].sort((a, b) => a.label.localeCompare(b.label));
       });
 
       onChange(createdValue);
       setIsOpen(false);
     } catch (err) {
       console.error('[ComboboxField] Create option error:', err);
-      setOptions((prev) => {
-        const exists = prev.some((o) => (o.normalizedValue || o.value?.trim().toLowerCase()) === norm);
-        if (exists) return prev;
-        return [...prev, { type, value: rawVal, normalizedValue: norm }].sort((a, b) => a.value.localeCompare(b.value));
-      });
-      onChange(rawVal);
-      setIsOpen(false);
+      setFetchError(err.message || 'Gagal menyimpan opsi baru ke database');
     } finally {
       setIsCreating(false);
     }
@@ -278,7 +302,7 @@ export default function ComboboxField({
       return;
     }
 
-    const totalItems = filteredOptions.length + (allowCreate && !exactMatchExists ? 1 : 0);
+    const totalItems = filteredOptions.length + (isCreatableAllowed && !exactMatchExists ? 1 : 0);
 
     if (e.key === 'ArrowDown') {
       e.preventDefault();
@@ -287,10 +311,10 @@ export default function ComboboxField({
       e.preventDefault();
       setHighlightedIndex((prev) => (prev - 1 >= 0 ? prev - 1 : totalItems - 1));
     } else if (e.key === 'Enter') {
-      e.preventDefault(); // Prevent form submission
+      e.preventDefault();
       if (highlightedIndex >= 0 && highlightedIndex < filteredOptions.length) {
         handleSelectOption(filteredOptions[highlightedIndex].value);
-      } else if (allowCreate && !exactMatchExists && searchQuery.trim()) {
+      } else if (isCreatableAllowed && !exactMatchExists && searchQuery.trim()) {
         handleCreateNewOption();
       }
     } else if (e.key === 'Escape') {
@@ -320,16 +344,18 @@ export default function ComboboxField({
         aria-controls={listboxId}
         aria-label={label || placeholder}
         className={cn(
-          "w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-all focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 outline-none select-none",
-          isOpen && "border-blue-600 ring-2 ring-blue-600/10"
+          "w-full bg-white border border-slate-200 text-xs flex items-center justify-between cursor-pointer transition-all focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 outline-none select-none",
+          compact ? "px-2.5 py-1.5 rounded-xl font-medium" : "px-3 py-2 rounded-xl font-normal",
+          isOpen && "border-blue-600 ring-2 ring-blue-600/10",
+          buttonClassName
         )}
       >
-        <span className={cn("truncate font-medium", value ? "text-slate-900" : "text-slate-400")}>
-          {value || placeholder}
+        <span className={cn("truncate font-medium", value !== '' && value !== null ? "text-slate-900" : "text-slate-400")}>
+          {currentDisplayLabel || placeholder}
         </span>
 
         <div className="flex items-center gap-1 shrink-0 text-slate-400">
-          {value && (
+          {value !== '' && value !== null && (
             <button
               type="button"
               onClick={(e) => {
@@ -337,7 +363,7 @@ export default function ComboboxField({
                 onChange('');
               }}
               className="p-0.5 hover:text-slate-600 rounded transition-colors cursor-pointer"
-              title="Clear selection"
+              title="Bersihkan pilihan"
             >
               <X size={12} />
             </button>
@@ -348,7 +374,7 @@ export default function ComboboxField({
 
       {/* Dropdown Panel */}
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden animate-in fade-in-50 zoom-in-95 duration-150">
+        <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden animate-in fade-in-50 zoom-in-95 duration-150 min-w-[180px]">
           {/* Search Input Box */}
           <div className="p-2 border-b border-slate-100 bg-slate-50/70">
             <div className="relative">
@@ -359,7 +385,7 @@ export default function ComboboxField({
                 value={searchQuery}
                 onChange={handleSearchInputChange}
                 onKeyDown={handleKeyDown}
-                placeholder="Cari atau filter opsi..."
+                placeholder={isCreatableAllowed ? "Cari atau ketik baru..." : "Cari opsi..."}
                 role="searchbox"
                 aria-autocomplete="list"
                 className="w-full pl-8 pr-7 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-600 outline-none font-sans"
@@ -369,12 +395,10 @@ export default function ComboboxField({
               )}
             </div>
             <div className="flex items-center justify-between text-[9px] font-mono text-slate-400 px-1 pt-1">
-              <span>Filter lokal instan</span>
+              <span>{isCreatableAllowed ? 'Pilih atau ketik baru' : 'Filter opsi (Select-only)'}</span>
               {fetchError ? (
                 <span className="text-amber-600 font-semibold">{fetchError}</span>
-              ) : (
-                <span>350ms Debounced Remote</span>
-              )}
+              ) : null}
             </div>
           </div>
 
@@ -384,13 +408,13 @@ export default function ComboboxField({
             role="listbox"
             className="max-h-56 overflow-y-auto p-1 divide-y divide-slate-50"
           >
-            {filteredOptions.length === 0 && exactMatchExists ? (
+            {filteredOptions.length === 0 && (exactMatchExists || !isCreatableAllowed) ? (
               <div className="py-6 text-center text-xs text-slate-400 font-mono">
                 Tidak ada opsi ditemukan.
               </div>
             ) : (
               filteredOptions.map((opt, idx) => {
-                const isSelected = value.toLowerCase() === opt.value.toLowerCase();
+                const isSelected = String(value).toLowerCase() === opt.value.toLowerCase();
                 const isHighlighted = highlightedIndex === idx;
 
                 return (
@@ -407,34 +431,35 @@ export default function ComboboxField({
                       !isSelected && !isHighlighted && "text-slate-700 hover:bg-slate-50"
                     )}
                   >
-                    <span className="truncate">{opt.value}</span>
+                    <span className="truncate">{opt.label}</span>
                     {isSelected && <Check size={14} className="text-blue-600 shrink-0" />}
                   </div>
                 );
               })
             )}
 
-            {/* Option Creation Action: + Tambah "<query>" */}
-            {allowCreate && !exactMatchExists && searchQuery.trim() && (
+            {/* Option Creation Action: + Tambah / Gunakan "<query>" */}
+            {isCreatableAllowed && !exactMatchExists && searchQuery.trim() && (
               <div
                 role="button"
                 onClick={handleCreateNewOption}
                 onMouseEnter={() => setHighlightedIndex(filteredOptions.length)}
                 className={cn(
                   "px-3 py-2.5 rounded-xl text-xs font-semibold text-blue-600 bg-blue-50/60 hover:bg-blue-600 hover:text-white flex items-center justify-between cursor-pointer transition-all mt-1 border border-dashed border-blue-200",
-                  highlightedIndex === filteredOptions.length && "bg-blue-600 text-white"
+                  highlightedIndex === filteredOptions.length && "bg-blue-600 text-white",
+                  isCreating && "opacity-50 cursor-not-allowed"
                 )}
               >
                 <div className="flex items-center gap-1.5 truncate">
                   {isCreating ? (
-                    <Loader2 size={14} className="animate-spin shrink-0" />
+                    <Loader2 size={14} className="animate-spin shrink-0 text-blue-600" />
                   ) : (
                     <Plus size={14} className="shrink-0" />
                   )}
-                  <span className="truncate">Tambah "{searchQuery.trim()}"</span>
+                  <span className="truncate">{isCreating ? 'Menyimpan ke DB...' : `Gunakan "${searchQuery.trim()}"`}</span>
                 </div>
                 <span className="font-mono text-[9px] uppercase px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-bold shrink-0">
-                  {createOnSelect ? 'Simpan ke Database' : 'Di-upsert saat Simpan'}
+                  + Baru
                 </span>
               </div>
             )}

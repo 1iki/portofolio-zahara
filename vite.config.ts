@@ -34,7 +34,16 @@ export default defineConfig(() => {
     },
     server: {
       hmr: process.env.DISABLE_HMR !== 'true',
-      watch: process.env.DISABLE_HMR === 'true' ? null : {},
+      watch: process.env.DISABLE_HMR === 'true' ? null : {
+        ignored: [
+          '**/test-results/**',
+          '**/screenshots/**',
+          '**/playwright-report/**',
+          '**/.system_generated/**',
+          '**/tests/**',
+          '**/*.log',
+        ],
+      },
     },
   };
 });

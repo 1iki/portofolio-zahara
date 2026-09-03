@@ -4,6 +4,13 @@ import { getExperience, deleteExperience, subscribeToDataChanges } from '../../l
 import ExperienceEditorModal from '../../components/manage/ExperienceEditorModal';
 import DeleteConfirmModal from '../../components/manage/DeleteConfirmModal';
 import Toast from '../../components/manage/Toast';
+import ComboboxField from '../../components/manage/ComboboxField';
+
+const EXP_TYPE_FILTER_OPTIONS = [
+  { value: 'all', label: 'Semua Tipe' },
+  { value: 'magang', label: 'Magang / Profesional' },
+  { value: 'organisasi', label: 'Organisasi' },
+];
 
 export default function ManageExperience({ openNewModalTrigger }) {
   const [experiences, setExperiences] = useState([]);
@@ -98,15 +105,15 @@ export default function ManageExperience({ openNewModalTrigger }) {
           />
         </div>
 
-        <select
+        <ComboboxField
           value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value)}
-          className="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:border-emerald-600 outline-none"
-        >
-          <option value="all">Semua Tipe</option>
-          <option value="magang">Magang / Profesional</option>
-          <option value="organisasi">Organisasi</option>
-        </select>
+          onChange={(val) => setTypeFilter(val || 'all')}
+          defaultOptions={EXP_TYPE_FILTER_OPTIONS}
+          placeholder="Semua Tipe"
+          creatable={false}
+          compact
+          className="w-44"
+        />
       </div>
 
       {/* Data List Grid */}

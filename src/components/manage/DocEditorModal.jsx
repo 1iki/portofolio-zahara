@@ -1,8 +1,19 @@
 import React, { useState } from 'react';
 import { X, Save, AlertCircle, Camera } from 'lucide-react';
 import MediaManager from './MediaManager';
-import { createDocumentation, updateDocumentation } from '../../lib/contentService';
+import ComboboxField from './ComboboxField';
+import { createDocumentation, updateDocumentation, createOption } from '../../lib/contentService';
 import { normalizeMedia } from '../../lib/mediaUtils';
+
+const DOC_TYPE_OPTIONS = [
+  { value: 'photo', label: 'Foto BTS' },
+  { value: 'video', label: 'Video BTS & Liputan' },
+];
+
+const DOC_GROUP_OPTIONS = [
+  { value: 'kampus', label: 'KAMPUS (Polimedia)' },
+  { value: 'magang', label: 'MAGANG (RRI / Industri)' },
+];
 
 export default function DocEditorModal({ doc = null, onClose, onSuccess }) {
   const isEditing = Boolean(doc);
@@ -82,6 +93,12 @@ export default function DocEditorModal({ doc = null, onClose, onSuccess }) {
     setIsSaving(true);
 
     try {
+      // Upsert taxonomy options to MongoDB cms_options
+      await Promise.all([
+        ['doc_type', payload.type],
+        ['doc_group', payload.group],
+      ].filter(([, value]) => value && value.trim()).map(([type, value]) => createOption(type, value).catch(() => {})));
+
       if (isEditing) {
         await updateDocumentation(doc.id, payload);
       } else {
@@ -169,29 +186,23 @@ export default function DocEditorModal({ doc = null, onClose, onSuccess }) {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label className="block font-medium text-xs text-slate-700 mb-1">Tipe Content</label>
-                <select
-                  value={formData.type}
-                  onChange={(e) => handleChange('type', e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:border-purple-600 outline-none transition-all"
-                >
-                  <option value="photo">Foto BTS</option>
-                  <option value="video">Video BTS & Liputan</option>
-                </select>
-              </div>
+              <ComboboxField
+                label="Tipe Content"
+                type="doc_type"
+                value={formData.type}
+                onChange={(val) => handleChange('type', val)}
+                placeholder="Pilih atau ketik tipe..."
+                defaultOptions={DOC_TYPE_OPTIONS}
+              />
 
-              <div>
-                <label className="block font-medium text-xs text-slate-700 mb-1">Kelompok Group</label>
-                <select
-                  value={formData.group}
-                  onChange={(e) => handleChange('group', e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:border-purple-600 outline-none transition-all"
-                >
-                  <option value="kampus">KAMPUS (Polimedia)</option>
-                  <option value="magang">MAGANG (RRI / Industri)</option>
-                </select>
-              </div>
+              <ComboboxField
+                label="Kelompok Group"
+                type="doc_group"
+                value={formData.group}
+                onChange={(val) => handleChange('group', val)}
+                placeholder="Pilih atau ketik group..."
+                defaultOptions={DOC_GROUP_OPTIONS}
+              />
 
               <div>
                 <label className="block font-medium text-xs text-slate-700 mb-1">Proyek Terkait</label>

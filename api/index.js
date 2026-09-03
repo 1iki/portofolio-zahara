@@ -781,6 +781,7 @@ app.post('/options', requireAuth, async (req, res) => {
     const validTypes = [
       'production_category', 'institution', 'distribution_platform',
       'script_category', 'script_format', 'script_role',
+      'doc_type', 'doc_group', 'experience_type',
     ];
 
     if (!type || !validTypes.includes(type)) {

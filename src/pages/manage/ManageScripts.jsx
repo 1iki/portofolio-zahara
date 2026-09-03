@@ -4,6 +4,20 @@ import { getScripts, deleteScript, subscribeToDataChanges } from '../../lib/cont
 import ScriptEditorModal from '../../components/manage/ScriptEditorModal';
 import DeleteConfirmModal from '../../components/manage/DeleteConfirmModal';
 import Toast from '../../components/manage/Toast';
+import ComboboxField from '../../components/manage/ComboboxField';
+
+const SCRIPT_CATEGORY_FILTER_OPTIONS = [
+  { value: 'all', label: 'Semua Kategori' },
+  { value: 'comedy', label: 'Sitkom & Drama (comedy)' },
+  { value: 'variety', label: 'Talkshow & Variety (variety)' },
+  { value: 'news', label: 'Berita & Media (news)' },
+];
+
+const SORT_ORDER_OPTIONS = [
+  { value: 'newest', label: 'Terbaru Pertama' },
+  { value: 'oldest', label: 'Terlama Pertama' },
+  { value: 'title', label: 'Judul (A-Z)' },
+];
 
 export default function ManageScripts({ openNewModalTrigger }) {
   const [scripts, setScripts] = useState([]);
@@ -64,6 +78,13 @@ export default function ManageScripts({ openNewModalTrigger }) {
     });
     return Array.from(formats);
   }, [scripts]);
+
+  const formatFilterOptions = useMemo(() => {
+    return [
+      { value: 'all', label: 'Semua Format' },
+      ...availableFormats.map((fmt) => ({ value: fmt, label: fmt })),
+    ];
+  }, [availableFormats]);
 
   // Filtered & Sorted scripts computation
   const processedScripts = useMemo(() => {
@@ -139,39 +160,37 @@ export default function ManageScripts({ openNewModalTrigger }) {
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Category Filter */}
-          <select
+          <ComboboxField
             value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            className="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:border-amber-600 outline-none font-medium cursor-pointer"
-          >
-            <option value="all">Semua Kategori</option>
-            <option value="comedy">Sitkom & Drama (comedy)</option>
-            <option value="variety">Talkshow & Variety (variety)</option>
-            <option value="news">Berita & Media (news)</option>
-          </select>
+            onChange={(val) => setCategoryFilter(val || 'all')}
+            defaultOptions={SCRIPT_CATEGORY_FILTER_OPTIONS}
+            placeholder="Semua Kategori"
+            creatable={false}
+            compact
+            className="w-48"
+          />
 
           {/* Format Filter */}
-          <select
+          <ComboboxField
             value={formatFilter}
-            onChange={(e) => setFormatFilter(e.target.value)}
-            className="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:border-amber-600 outline-none font-medium cursor-pointer max-w-[180px]"
-          >
-            <option value="all">Semua Format</option>
-            {availableFormats.map((fmt, i) => (
-              <option key={i} value={fmt}>{fmt}</option>
-            ))}
-          </select>
+            onChange={(val) => setFormatFilter(val || 'all')}
+            defaultOptions={formatFilterOptions}
+            placeholder="Semua Format"
+            creatable={false}
+            compact
+            className="w-44"
+          />
 
           {/* Sorting */}
-          <select
+          <ComboboxField
             value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value)}
-            className="px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:border-amber-600 outline-none font-medium cursor-pointer"
-          >
-            <option value="newest">Terbaru Pertama</option>
-            <option value="oldest">Terlama Pertama</option>
-            <option value="title">Judul (A-Z)</option>
-          </select>
+            onChange={(val) => setSortOrder(val || 'newest')}
+            defaultOptions={SORT_ORDER_OPTIONS}
+            placeholder="Urutan..."
+            creatable={false}
+            compact
+            className="w-40"
+          />
         </div>
       </div>
 

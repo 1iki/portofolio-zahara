@@ -13,7 +13,20 @@ import { normalizeMedia } from '../../lib/mediaUtils';
 import DocEditorModal from '../../components/manage/DocEditorModal';
 import DeleteConfirmModal from '../../components/manage/DeleteConfirmModal';
 import Toast from '../../components/manage/Toast';
+import ComboboxField from '../../components/manage/ComboboxField';
 import { cn } from '../../lib/utils';
+
+const GROUP_FILTER_OPTIONS = [
+  { value: 'all', label: 'Semua Group' },
+  { value: 'kampus', label: 'Kampus' },
+  { value: 'magang', label: 'Magang' },
+];
+
+const TYPE_FILTER_OPTIONS = [
+  { value: 'all', label: 'Semua Tipe' },
+  { value: 'photo', label: 'Foto BTS' },
+  { value: 'video', label: 'Video BTS' },
+];
 
 export default function ManageDocumentation({ openNewModalTrigger }) {
   const [docs, setDocs] = useState([]);
@@ -116,26 +129,26 @@ export default function ManageDocumentation({ openNewModalTrigger }) {
         {/* Group & Type Filters */}
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           {/* Group Filter */}
-          <select
+          <ComboboxField
             value={selectedGroup}
-            onChange={(e) => setSelectedGroup(e.target.value)}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:bg-white focus:border-purple-600 outline-none transition-all font-medium"
-          >
-            <option value="all">Semua Group</option>
-            <option value="kampus">Kampus</option>
-            <option value="magang">Magang</option>
-          </select>
+            onChange={(val) => setSelectedGroup(val || 'all')}
+            defaultOptions={GROUP_FILTER_OPTIONS}
+            placeholder="Semua Group"
+            creatable={false}
+            compact
+            className="w-40"
+          />
 
           {/* Type Filter */}
-          <select
+          <ComboboxField
             value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:bg-white focus:border-purple-600 outline-none transition-all font-medium"
-          >
-            <option value="all">Semua Tipe</option>
-            <option value="photo">Foto BTS</option>
-            <option value="video">Video BTS</option>
-          </select>
+            onChange={(val) => setSelectedType(val || 'all')}
+            defaultOptions={TYPE_FILTER_OPTIONS}
+            placeholder="Semua Tipe"
+            creatable={false}
+            compact
+            className="w-40"
+          />
         </div>
       </div>
 

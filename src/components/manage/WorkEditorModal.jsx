@@ -5,6 +5,14 @@ import ComboboxField from './ComboboxField';
 import { createWork, updateWork, createOption, getWorkCategories, createWorkCategory } from '../../lib/contentService';
 import { normalizeMedia } from '../../lib/mediaUtils';
 
+const WORK_MEDIA_TYPE_OPTIONS = [
+  { value: 'youtube', label: 'YouTube (Video Player)' },
+  { value: 'drive', label: 'Google Drive (Embed Viewer)' },
+  { value: 'instagram', label: 'Instagram' },
+  { value: 'image', label: 'Image Gallery Only' },
+  { value: 'social', label: 'Social Media Post' },
+];
+
 export default function WorkEditorModal({ work = null, onClose, onSuccess }) {
   const isEditing = Boolean(work);
 
@@ -310,20 +318,14 @@ export default function WorkEditorModal({ work = null, onClose, onSuccess }) {
                 placeholder="Pilih atau cari..."
               />
 
-              <div>
-                <label className="block font-medium text-xs text-slate-700 mb-1">Tipe Media Playable</label>
-                <select
-                  value={formData.mediaType}
-                  onChange={(e) => handleChange('mediaType', e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:border-blue-600 outline-none"
-                >
-                  <option value="youtube">YouTube (Video Player)</option>
-                  <option value="drive">Google Drive (Embed Viewer)</option>
-                  <option value="instagram">Instagram</option>
-                  <option value="image">Image Gallery Only</option>
-                  <option value="social">Social Media Post</option>
-                </select>
-              </div>
+              <ComboboxField
+                label="Tipe Media Playable"
+                value={formData.mediaType}
+                onChange={(val) => handleChange('mediaType', val)}
+                placeholder="Pilih tipe media..."
+                defaultOptions={WORK_MEDIA_TYPE_OPTIONS}
+                creatable={false}
+              />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
