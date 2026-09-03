@@ -241,7 +241,7 @@ export default function ScriptModal({ script, onClose }) {
 
                   {/* CTA Contact & PDF Buttons */}
                   <div className="flex flex-wrap justify-center gap-3 pt-2">
-                    {script.pdfUrl && (
+                    {/* {script.pdfUrl && (
                       <a
                         href={script.pdfUrl}
                         target="_blank"
@@ -251,7 +251,7 @@ export default function ScriptModal({ script, onClose }) {
                         <FileText size={15} />
                         Buka Dokumen PDF (Cloudinary)
                       </a>
-                    )}
+                    )} */}
                     <a
                       href={`mailto:${WATERMARK_CONFIG.contactEmail}?subject=Permintaan Naskah Lengkap: ${encodeURIComponent(script.title)}`}
                       className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-accent text-navy-base font-semibold text-xs font-mono hover:bg-blue-accent/90 transition-colors shadow-md"
