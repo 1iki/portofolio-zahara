@@ -8,26 +8,11 @@ import AsyncImage from './common/AsyncImage';
 import { useSound } from '../context/SoundContext';
 import { cn } from '../lib/utils';
 import { resolvePrimaryThumbnail } from '../lib/mediaUtils';
-
-/**
- * Helper to parse aspect ratio string (e.g. "4 / 5" or "16 / 9") into width/height numerical ratio.
- */
-function parseAspectRatio(ratioStr) {
-  if (!ratioStr) return 16 / 9;
-  const parts = ratioStr.split('/').map((s) => parseFloat(s.trim()));
-  if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1]) && parts[1] !== 0) {
-    return parts[0] / parts[1];
-  }
-  return 16 / 9;
-}
-
-/**
- * Helper to calculate height factor relative to column width (height = width * (1 / ratio)).
- */
-function getHeightFactor(ratioStr) {
-  const numericRatio = parseAspectRatio(ratioStr);
-  return 1 / numericRatio;
-}
+import {
+  getDocumentationItemAspectRatio,
+  getHeightFactorFromRatio,
+  validateAndFormatAspectRatio
+} from '../lib/aspectRatioUtils';
 
 /**
  * Hook to track responsive column count based on viewport breakpoints.
@@ -69,6 +54,7 @@ export default function DocumentationSection() {
   const [loadingState, setLoadingState] = useState('loading'); // 'loading' | 'success' | 'error'
   const [loadProgress, setLoadProgress] = useState(25);
   const [loadError, setLoadError] = useState(null);
+  const [loadedRatios, setLoadedRatios] = useState({}); // Map of itemId -> measured ratio string
   const { playClick } = useSound();
   const columnCount = useColumnCount();
 
@@ -102,7 +88,22 @@ export default function DocumentationSection() {
     return unsubscribe;
   }, []);
 
-  // Shortest-column placement algorithm
+  // Handle dynamic measurement of image dimensions upon load
+  const handleImageLoad = (item, e) => {
+    if (e?.target && e.target.naturalWidth && e.target.naturalHeight) {
+      const measuredRatio = validateAndFormatAspectRatio(
+        e.target.naturalWidth / e.target.naturalHeight
+      );
+      if (measuredRatio) {
+        setLoadedRatios((prev) => {
+          if (prev[item.id] === measuredRatio) return prev;
+          return { ...prev, [item.id]: measuredRatio };
+        });
+      }
+    }
+  };
+
+  // Shortest-column placement algorithm using data-driven image ratios
   const columns = useMemo(() => {
     const numCols = columnCount;
     const cols = Array.from({ length: numCols }, () => []);
@@ -110,7 +111,8 @@ export default function DocumentationSection() {
     const gapFactor = 0.06; // vertical gap allowance relative to column width
 
     docList.forEach((item) => {
-      const itemHeightFactor = getHeightFactor(item.aspectRatio);
+      const effectiveRatio = getDocumentationItemAspectRatio(item, loadedRatios[item.id]);
+      const itemHeightFactor = getHeightFactorFromRatio(effectiveRatio);
 
       // Find column with minimum total height
       let minIndex = 0;
@@ -125,7 +127,7 @@ export default function DocumentationSection() {
     });
 
     return cols;
-  }, [columnCount, docList]);
+  }, [columnCount, docList, loadedRatios]);
 
   return (
     <section className="py-24 max-w-7xl mx-auto px-6" id="dokumentasi">
@@ -180,6 +182,7 @@ export default function DocumentationSection() {
             {colItems.map((item, idx) => {
               const isVideo = item.type === 'video';
               const thumbSrc = resolvePrimaryThumbnail(item, isVideo ? item.thumbnailUrl : (item.mediaUrl || item.thumbnailUrl));
+              const cardAspectRatio = getDocumentationItemAspectRatio(item, loadedRatios[item.id]);
 
               return (
                 <motion.button
@@ -189,16 +192,17 @@ export default function DocumentationSection() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-30px" }}
                   transition={{ duration: 0.4, delay: idx * 0.06 }}
-                  style={{ aspectRatio: item.aspectRatio || '16 / 9' }}
+                  style={{ aspectRatio: cardAspectRatio }}
                   className="relative w-full bg-navy-deep border border-divider rounded-sm overflow-hidden cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-accent focus-visible:ring-offset-2 focus-visible:ring-offset-navy-base shrink-0"
                   onClick={() => { playClick(); setSelectedDoc(item); }}
                   aria-label={`Lihat dokumentasi: ${item.title}`}
                   onContextMenu={(e) => e.preventDefault()}
                 >
-                  {/* Thumbnail Image — exact media aspect ratio with AsyncImage */}
+                  {/* Thumbnail Image — data-driven media aspect ratio */}
                   <AsyncImage
                     src={thumbSrc}
                     alt={`Dokumentasi ${item.title}`}
+                    onLoad={(e) => handleImageLoad(item, e)}
                     containerClassName="w-full h-full border-0 bg-navy-deep rounded-none"
                     className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500 pointer-events-none select-none"
                     draggable={false}
@@ -245,4 +249,3 @@ export default function DocumentationSection() {
     </section>
   );
 }
-
