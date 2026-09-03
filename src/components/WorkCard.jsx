@@ -7,6 +7,7 @@ import { useSound } from '../context/SoundContext';
 import { resolveThumbnail, getYouTubeThumbnailFrames, getYouTubeThumbnailFallback, hasPlayableMedia } from '../lib/utils';
 import { resolvePrimaryThumbnail } from '../lib/mediaUtils';
 import ScrubDeck from './ScrubDeck';
+import AsyncImage from './common/AsyncImage';
 
 export default function WorkCard({ work, onSelectVideo, onSelectInfo }) {
   const cardRef = useRef(null);
@@ -185,12 +186,15 @@ export default function WorkCard({ work, onSelectVideo, onSelectInfo }) {
       <div className="aspect-video relative bg-ink overflow-hidden border-b border-divider">
         {hasThumbnail ? (
           <>
-            <img
+            <AsyncImage
               src={currentImageSrc}
               alt={work.title}
-              className={`absolute inset-0 w-full h-full ${work.aspectRatio === 'portrait' ? 'object-contain bg-navy-base p-2' : 'object-cover'} opacity-85 group-hover:opacity-100 transition-opacity duration-500`}
+              containerClassName="absolute inset-0 w-full h-full border-0 rounded-none bg-ink"
+              className={`w-full h-full ${work.aspectRatio === 'portrait' ? 'object-contain bg-navy-base p-2' : 'object-cover'} opacity-85 group-hover:opacity-100 transition-opacity duration-500`}
+              showPercentLoader={true}
+              loadingText="Memuat thumbnail..."
               onError={handleImageError}
-              loading="lazy"
+              loading="eager"
             />
             {/* Gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-navy-deep/80 via-transparent to-transparent pointer-events-none"></div>

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Camera, Video, ExternalLink, ShieldCheck } from 'lucide-react';
 import { useSound } from '../context/SoundContext';
 import MediaGallery from './MediaGallery';
+import AsyncEmbed from './common/AsyncEmbed';
 import { normalizeMedia } from '../lib/mediaUtils';
 
 /**
@@ -105,15 +106,12 @@ export default function DocumentationModal({ item, onClose }) {
                 className="relative w-full rounded-lg border border-divider bg-navy-base overflow-hidden select-none"
                 onContextMenu={(e) => e.preventDefault()}
               >
-                <div className="relative w-full aspect-video bg-navy-base">
-                  <iframe
-                    src={item.videoEmbedUrl}
-                    title={item.title}
-                    className="w-full h-full border-0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                </div>
+                <AsyncEmbed
+                  src={item.videoEmbedUrl}
+                  title={item.title}
+                  aspectRatio="16 / 9"
+                  subtext="Loading BTS Video Stream..."
+                />
               </div>
             ) : (
               <MediaGallery

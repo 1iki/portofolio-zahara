@@ -1,7 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { scripts as seedScripts } from '../src/data/scripts.js';
 import { SCRIPT_BASELINE_FIELDS, normalizeScriptPayload } from '../api/lib/scriptSchema.js';
+
+const seedScripts = [
+  { id: 's1', title: 'T1', program: 'P1', episode: 'E1', category: 'comedy', role: 'R1', date: '2024', organization: 'O1', previewPageCount: '1 halaman', description: 'D1', thumbnailUrl: '/t.png', previewImageUrl: '/p.png', format: 'f1', tags: ['t1'] },
+];
 
 let passed = 0;
 let failed = 0;
@@ -41,7 +44,7 @@ assert(manage.includes('searchQuery') && manage.includes('categoryFilter') && ma
 assert(editor.includes("'IDLE'") && editor.includes("'UPLOADING'") && editor.includes("'SAVED'") && editor.includes("'ERROR'"), 'TEST 8: CMS declares explicit document states');
 assert(modal.includes('script.previewImageUrl || script.thumbnailUrl') && modal.includes("onError"), 'TEST 16: modal has preview → thumbnail → placeholder fallback');
 assert(['script_category', 'institution', 'script_format', 'script_role'].every((type) => editor.includes(`type="${type}"`)), 'CMS uses comboboxes for category, institution, format, and role');
-assert(combobox.includes('}, 7000)') && combobox.includes('clearTimeout(debounceTimerRef.current)'), 'Combobox remote option search is debounced for 7 seconds');
+assert(combobox.includes('}, 350)') && combobox.includes('clearTimeout(debounceTimerRef.current)'), 'Combobox remote option search is debounced for 350ms');
 assert(editor.includes('createOnSelect={false}') && editor.includes('createOption(type, value)'), 'New Naskah combobox values are persisted on form submit, not selection');
 
 console.log('\n3. Security, upload, and cleanup contract');

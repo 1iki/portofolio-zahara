@@ -1,4 +1,4 @@
-// The seed in src/data/scripts.js is the compatibility baseline.  These fields
+// The baseline Naskah schema fields for system compatibility.  These fields
 // are intentionally listed rather than accepting arbitrary client payloads.
 export const SCRIPT_BASELINE_FIELDS = [
   'id', 'title', 'program', 'episode', 'category', 'role', 'date',

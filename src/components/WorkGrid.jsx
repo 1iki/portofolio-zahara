@@ -6,6 +6,7 @@ import WorkCard from './WorkCard';
 import WorkSection from './WorkSection';
 import VideoModal from './VideoModal';
 import ProjectInfoModal from './ProjectInfoModal';
+import PercentLoader from './common/PercentLoader';
 import { useSound } from '../context/SoundContext';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { cn } from '../lib/utils';
@@ -24,17 +25,30 @@ export default function WorkGrid() {
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [selectedInfo, setSelectedInfo] = useState(null);
+  const [loadingState, setLoadingState] = useState('loading'); // 'loading' | 'success' | 'error'
+  const [loadProgress, setLoadProgress] = useState(15);
+  const [loadError, setLoadError] = useState(null);
   const { playClick } = useSound();
 
   const isMobile = useIsMobile(767);
 
   const loadAllData = async () => {
+    setLoadingState('loading');
+    setLoadError(null);
+    setLoadProgress(20);
+
+    const progressTimer1 = setTimeout(() => setLoadProgress(55), 150);
+    const progressTimer2 = setTimeout(() => setLoadProgress(85), 350);
+
     try {
       const [w, rf, wc] = await Promise.all([
         getWorks(),
         getRoleFilters(),
         getWorkCategories(),
       ]);
+      clearTimeout(progressTimer1);
+      clearTimeout(progressTimer2);
+
       setWorksList(Array.isArray(w) ? w : []);
       setRoleFiltersList(Array.isArray(rf) ? rf : []);
 
@@ -45,8 +59,15 @@ export default function WorkGrid() {
         });
         setWorkCategoriesMap(catMap);
       }
+
+      setLoadProgress(100);
+      setLoadingState('success');
     } catch (err) {
+      clearTimeout(progressTimer1);
+      clearTimeout(progressTimer2);
       console.error('[WorkGrid] Failed to load grid data:', err);
+      setLoadError(err?.message || 'Gagal memuat karya portofolio dari server.');
+      setLoadingState('error');
     }
   };
 
@@ -252,7 +273,40 @@ export default function WorkGrid() {
 
       {/* Content: Highlight + Grouped Sections */}
       <AnimatePresence mode="wait">
-        {hasResults ? (
+        {loadingState === 'loading' ? (
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="py-16 flex flex-col items-center justify-center border border-divider/40 rounded-sm bg-navy-deep/40"
+          >
+            <PercentLoader
+              variant="percent"
+              label="Percent"
+              value={loadProgress}
+              subtext="Loading Portfolio Projects..."
+              size="md"
+              showBar={true}
+            />
+          </motion.div>
+        ) : loadingState === 'error' ? (
+          <motion.div
+            key="error"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="py-12 flex justify-center"
+          >
+            <PercentLoader
+              variant="percent"
+              label="Percent"
+              error={loadError}
+              onRetry={loadAllData}
+              size="md"
+            />
+          </motion.div>
+        ) : hasResults ? (
           <motion.div
             key={activeFilter}
             initial={{ opacity: 0 }}

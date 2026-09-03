@@ -15,3 +15,13 @@ Zahara CV Fiks General  .pdf
 linkedin-sample.html
 task.md
 walkthrough.md
+src\data\contact.js
+src\data\documentation.js
+src\data\education.js
+src\data\experience.js
+src\data\experienceCategories.js
+src\data\roleFilters.js
+src\data\scripts.js
+src\data\scriptTaxonomy.js
+src\data\workCategories.js
+src\data\works.js

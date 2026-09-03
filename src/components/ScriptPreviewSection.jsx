@@ -2,24 +2,53 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Eye, Info, Lock } from 'lucide-react';
 import { getScripts, subscribeToDataChanges } from '../lib/contentService';
-import { scriptCategories, scriptGroupConfig } from '../data/scriptTaxonomy';
+import PercentLoader from './common/PercentLoader';
+import AsyncImage from './common/AsyncImage';
 import ScriptModal from './ScriptModal';
 import { TiledScriptWatermark } from './WatermarkOverlay';
 import { useSound } from '../context/SoundContext';
 import { cn } from '../lib/utils';
 
+const DEFAULT_SCRIPT_CATEGORIES = [
+  { id: 'all', label: 'Semua Naskah' },
+  { id: 'comedy', label: 'Sitkom & Drama' },
+  { id: 'variety', label: 'Talkshow & Variety' },
+  { id: 'news', label: 'Berita & Media' },
+];
+
+const DEFAULT_SCRIPT_GROUP_CONFIG = {
+  comedy: { label: 'SITKOM & DRAMA', subtitle: 'Naskah Situasi Komedi & Drama' },
+  variety: { label: 'TALKSHOW & VARIETY', subtitle: 'Naskah Talkshow, Gameshow & Variety Show' },
+  news: { label: 'BERITA & MEDIA', subtitle: 'Naskah Lead Siaran & Berita Digital' },
+};
+
 export default function ScriptPreviewSection() {
   const [scriptsList, setScriptsList] = useState([]);
   const [activeFilter, setActiveFilter] = useState('all');
   const [selectedScript, setSelectedScript] = useState(null);
+  const [loadingState, setLoadingState] = useState('loading'); // 'loading' | 'success' | 'error'
+  const [loadProgress, setLoadProgress] = useState(20);
+  const [loadError, setLoadError] = useState(null);
   const { playClick } = useSound();
 
   const loadScripts = async () => {
+    setLoadingState('loading');
+    setLoadError(null);
+    setLoadProgress(30);
+
+    const timer1 = setTimeout(() => setLoadProgress(70), 150);
+
     try {
       const data = await getScripts();
+      clearTimeout(timer1);
       setScriptsList(Array.isArray(data) ? data : []);
+      setLoadProgress(100);
+      setLoadingState('success');
     } catch (err) {
+      clearTimeout(timer1);
       console.error('[ScriptPreviewSection] Failed to load scripts:', err);
+      setLoadError(err?.message || 'Gagal memuat daftar naskah dari server.');
+      setLoadingState('error');
     }
   };
 
@@ -38,7 +67,7 @@ export default function ScriptPreviewSection() {
 
   const dynamicScriptCategories = useMemo(() => {
     const categoriesMap = new Map();
-    scriptCategories.forEach((cat) => {
+    DEFAULT_SCRIPT_CATEGORIES.forEach((cat) => {
       categoriesMap.set(cat.id, cat);
     });
 
@@ -64,7 +93,7 @@ export default function ScriptPreviewSection() {
     }, {});
     return Object.entries(grouped).map(([key, items]) => ({
       key,
-      config: scriptGroupConfig[key] || {
+      config: DEFAULT_SCRIPT_GROUP_CONFIG[key] || {
         label: key.replace(/[-_]/g, ' ').toUpperCase(),
         subtitle: 'Naskah Pilihan',
       },
@@ -109,16 +138,39 @@ export default function ScriptPreviewSection() {
         </div>
       </div>
 
-      {/* Grouped Sections — identical pattern to WorkSection */}
-      {groupedScripts.map((group, groupIdx) => (
-        <motion.section
-          key={group.key}
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="mb-16 last:mb-0"
-        >
+      {/* Content Area: Loading vs Error vs Grouped Sections */}
+      {loadingState === 'loading' ? (
+        <div className="py-16 flex justify-center border border-divider/40 rounded-sm bg-navy-deep/40">
+          <PercentLoader
+            variant="percent"
+            label="Percent"
+            value={loadProgress}
+            subtext="Loading Script Collection..."
+            size="md"
+            showBar={true}
+          />
+        </div>
+      ) : loadingState === 'error' ? (
+        <div className="py-12 flex justify-center">
+          <PercentLoader
+            variant="percent"
+            label="Percent"
+            error={loadError}
+            onRetry={loadScripts}
+            size="md"
+          />
+        </div>
+      ) : (
+        <>
+          {groupedScripts.map((group, groupIdx) => (
+          <motion.section
+            key={group.key}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="mb-16 last:mb-0"
+          >
           {/* Section Header — same markup as WorkSection */}
           <div className="mb-8">
             <div className="flex items-baseline gap-3 mb-1">
@@ -266,6 +318,8 @@ export default function ScriptPreviewSection() {
           </div>
         </motion.section>
       ))}
+        </>
+      )}
 
       {/* Script Viewer Modal */}
       {selectedScript && (

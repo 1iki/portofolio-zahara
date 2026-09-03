@@ -1,27 +1,10 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Plus, Minus } from 'lucide-react';
-import { workCategories } from '../data/workCategories';
 import WorkCard from './WorkCard';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { cn } from '../lib/utils';
 
-/**
- * WorkSection — renders a single production context category group section.
- * Supports desktop expanded view and mobile interactive accordion with deferred rendering.
- *
- * Props:
- *   number        — formatted section number ("01", "02", etc.)
- *   category      — category slug key (e.g. "polimedia-tv")
- *   works         — array of work items in this category
- *   isOpen        — boolean: is group expanded on mobile
- *   isLoaded      — boolean: has group been expanded at least once on mobile
- *   isMobile      — boolean: screen width < 768px
- *   onToggle      — function: toggle open state on mobile header click
- *   onSelectVideo — modal trigger handler
- *   onSelectInfo  — modal trigger handler
- *   children      — fallback elements if works prop is not passed
- */
 export default function WorkSection({
   number,
   category,
@@ -35,7 +18,7 @@ export default function WorkSection({
   onSelectInfo,
   children,
 }) {
-  const config = categoryConfig || workCategories[category] || {
+  const config = categoryConfig || {
     label: (category || 'Kategori Karya').replace(/[-_]/g, ' ').toUpperCase(),
     subtitle: 'Kategori Produksi Karya',
   };

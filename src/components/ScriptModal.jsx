@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Lock, Mail, Linkedin, Instagram, FileText, AlertCircle } from 'lucide-react';
 import { TiledScriptWatermark } from './WatermarkOverlay';
+import AsyncImage from './common/AsyncImage';
+import PercentLoader from './common/PercentLoader';
 import { WATERMARK_CONFIG } from '../lib/watermarkConfig';
 import { useSound } from '../context/SoundContext';
 
@@ -124,14 +126,18 @@ export default function ScriptModal({ script, onClose }) {
               {/* Option 2: Runtime Tiled Watermark Overlay */}
               <TiledScriptWatermark opacity={0.16} />
 
-              {/* Render Script Preview as Image/SVG Asset */}
+              {/* Render Script Preview as Image/SVG Asset with Async Percent Loading */}
               <div className="relative w-full flex justify-center bg-navy-base p-2 sm:p-4 min-h-[450px]">
-                <img
+                <AsyncImage
                   src={script.previewImageUrl || script.thumbnailUrl || '/naskah/salah-pintu-ep01.png'}
+                  fallbackSrc={script.thumbnailUrl || '/naskah/salah-pintu-ep01.png'}
                   alt={`Cuplikan naskah ${script.title} oleh Zahara Elhusna Barok`}
                   className="w-full max-w-2xl h-auto object-contain rounded shadow-lg select-none pointer-events-none"
+                  containerClassName="w-full max-w-2xl min-h-[400px] border-0 bg-transparent"
+                  loadingText="Memuat pratinjau naskah..."
+                  showPercentLoader={true}
+                  onError={() => {}}
                   draggable={false}
-                  onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/naskah/salah-pintu-ep01.png'; }}
                 />
 
                 {/* Bottom Gradient Fade-Out Mask */}

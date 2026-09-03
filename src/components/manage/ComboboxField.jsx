@@ -1,16 +1,32 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback, useId } from 'react';
 import { 
   Check, 
   ChevronDown, 
   Plus, 
   Search, 
   Loader2, 
-  X,
-  Sparkles
+  X
 } from 'lucide-react';
 import { getOptions, createOption } from '../../lib/contentService';
 import { cn } from '../../lib/utils';
 
+// A stable shared default prevents a new [] reference from retriggering the
+// initial-options effect on every render for callers without local options.
+const EMPTY_OPTIONS = [];
+
+/**
+ * ComboboxField — Professional Local-First & Debounced Combobox / Autocomplete Component
+ * 
+ * UX Standards:
+ * - Local-first search: Instant local filtering on client options
+ * - Debounced remote search: 350ms debounce before executing network queries
+ * - Remote Search Threshold: Minimum query length = 3 characters before remote API query
+ * - AbortController & Stale Response Protection: Cancels in-flight requests on query change
+ * - Separate Input State & Selection State: `searchQuery` (local input) vs `value` (selected option)
+ * - Stable Dropdown: Preserves previous results during fetch, prevents layout jumps or closing
+ * - Non-blocking UI: Compact inline micro-spinner, zero full-screen or global loading triggers
+ * - Accessibility: ARIA combobox semantics, full keyboard navigation (Up, Down, Enter, Esc, Tab)
+ */
 export default function ComboboxField({
   label,
   required = false,
@@ -18,7 +34,7 @@ export default function ComboboxField({
   value = '',
   onChange,
   placeholder = 'Pilih atau cari...',
-  defaultOptions = [],
+  defaultOptions = EMPTY_OPTIONS,
   allowCreate = true,
   createOnSelect = false,
   className = ''
@@ -29,32 +45,82 @@ export default function ComboboxField({
   const [isLoading, setIsLoading] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [fetchError, setFetchError] = useState(null);
+  const listboxId = useId();
 
   const containerRef = useRef(null);
   const searchInputRef = useRef(null);
   const debounceTimerRef = useRef(null);
+  const abortControllerRef = useRef(null);
+  const requestIdRef = useRef(0);
 
-  // Initial fetch of options on mount or type change
-  const fetchOptions = async (query = '') => {
+  // Initial fetch of default options on mount or type change
+  const fetchInitialOptions = useCallback(async () => {
     setIsLoading(true);
+    setFetchError(null);
     try {
-      const data = await getOptions(type, query);
+      const data = await getOptions(type, '');
       const merged = [...defaultOptions, ...(data || [])].reduce((acc, option) => {
         const key = option.normalizedValue || option.value?.trim().toLowerCase();
-        if (key && !acc.some((item) => (item.normalizedValue || item.value?.trim().toLowerCase()) === key)) acc.push(option);
+        if (key && !acc.some((item) => (item.normalizedValue || item.value?.trim().toLowerCase()) === key)) {
+          acc.push(option);
+        }
         return acc;
       }, []);
       setOptions(merged);
     } catch (err) {
-      console.error('[ComboboxField] Fetch options error:', err);
+      console.error('[ComboboxField] Initial fetch options error:', err);
+      setFetchError('Gagal memuat opsi');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [type, defaultOptions]);
 
   useEffect(() => {
-    fetchOptions();
-  }, [type, defaultOptions]);
+    fetchInitialOptions();
+  }, [fetchInitialOptions]);
+
+  // Debounced Remote Search (350ms, Min length: 3 chars)
+  const performRemoteSearch = useCallback(async (query, requestId) => {
+    // The input may have changed while this callback was waiting in the
+    // debounce timer. Never begin an obsolete request.
+    if (!query || query.trim().length < 3 || requestId !== requestIdRef.current) return;
+
+    abortControllerRef.current = new AbortController();
+    const controller = abortControllerRef.current;
+
+    setIsLoading(true);
+    setFetchError(null);
+
+    try {
+      const data = await getOptions(type, query.trim(), controller.signal);
+
+      // Protect against stale responses
+      if (requestId !== requestIdRef.current) return;
+      if (data === null) return; // Request aborted
+
+      // Merge new remote results with existing options stably without flickering
+      setOptions((prev) => {
+        const merged = [...prev, ...(data || [])].reduce((acc, option) => {
+          const key = option.normalizedValue || option.value?.trim().toLowerCase();
+          if (key && !acc.some((item) => (item.normalizedValue || item.value?.trim().toLowerCase()) === key)) {
+            acc.push(option);
+          }
+          return acc;
+        }, []);
+        return merged;
+      });
+    } catch (err) {
+      if (err.name !== 'AbortError' && requestId === requestIdRef.current) {
+        console.error('[ComboboxField] Remote search error:', err);
+        setFetchError('Gagal menyinkronkan opsi');
+      }
+    } finally {
+      if (requestId === requestIdRef.current) {
+        setIsLoading(false);
+      }
+    }
+  }, [type]);
 
   // Handle click outside to close dropdown
   useEffect(() => {
@@ -76,36 +142,49 @@ export default function ComboboxField({
     } else {
       setSearchQuery('');
       setHighlightedIndex(-1);
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+      if (abortControllerRef.current) abortControllerRef.current.abort();
     }
   }, [isOpen]);
 
-  // MANDATORY 7000ms DEBOUNCE FOR REMOTE SEARCH
+  // Handle Search Input Change with 350ms Debounce and Minimum Threshold (3 chars)
   const handleSearchInputChange = (e) => {
     const text = e.target.value;
     setSearchQuery(text);
     setHighlightedIndex(-1);
 
-    // Reset 7000ms timer every time user types
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
 
-    // Remote database search triggers ONLY after 7000ms of typing inactivity
-    debounceTimerRef.current = setTimeout(() => {
-      fetchOptions(text);
-    }, 7000);
+    // Invalidate and abort immediately, rather than after the next 350ms
+    // debounce window. This keeps an older response from becoming authoritative
+    // while the user is still typing a newer query.
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    const requestId = ++requestIdRef.current;
+
+    const trimmed = text.trim();
+    // Rule: 0-2 characters -> No API request (instant local filtering)
+    // Rule: 3+ characters -> Debounced 350ms remote search
+    if (trimmed.length >= 3) {
+      debounceTimerRef.current = setTimeout(() => {
+        performRemoteSearch(trimmed, requestId);
+      }, 350);
+    } else {
+      setIsLoading(false);
+    }
   };
 
-  // Cleanup debounce timer on unmount
+  // Cleanup timers & abort controllers on unmount
   useEffect(() => {
     return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+      if (abortControllerRef.current) abortControllerRef.current.abort();
     };
   }, []);
 
-  // Filter options locally for instant UI responsiveness
+  // Local-First Instant Filtering
   const filteredOptions = useMemo(() => {
     if (!searchQuery.trim()) return options;
     const q = searchQuery.trim().toLowerCase();
@@ -116,26 +195,47 @@ export default function ComboboxField({
     );
   }, [options, searchQuery]);
 
-  // Check if current search query already exists as an option
+  // Check if exact match already exists
   const exactMatchExists = useMemo(() => {
     if (!searchQuery.trim()) return true;
     const norm = searchQuery.trim().toLowerCase().replace(/\s+/g, ' ');
-    return options.some((opt) => opt.normalizedValue === norm);
+    return options.some((opt) => (opt.normalizedValue || opt.value?.trim().toLowerCase()) === norm);
   }, [options, searchQuery]);
 
-  // Instant selection handler (0s delay)
+  // Selection Handler
   const handleSelectOption = (selectedValue) => {
     onChange(selectedValue);
     setIsOpen(false);
   };
 
-  // New values are form-scoped by default. They are persisted by the parent
-  // editor only after its own save action succeeds.
+  // Option Creation Handler
   const handleCreateNewOption = async () => {
     const rawVal = searchQuery.trim();
     if (!rawVal) return;
 
+    const norm = rawVal.toLowerCase().replace(/\s+/g, ' ');
+
     if (!createOnSelect) {
+      // 1. Immediately update local options list so newly created option is visible in dropdown
+      setOptions((prev) => {
+        const exists = prev.some(
+          (o) => (o.normalizedValue || o.value?.trim().toLowerCase()) === norm
+        );
+        if (exists) return prev;
+        return [
+          ...prev,
+          { type, value: rawVal, normalizedValue: norm }
+        ].sort((a, b) => a.value.localeCompare(b.value));
+      });
+
+      // 2. Persist option to MongoDB backend immediately
+      if (type) {
+        createOption(type, rawVal).catch((err) => {
+          console.warn('[ComboboxField] Asynchronous option creation warning:', err);
+        });
+      }
+
+      // 3. Set value in form & close dropdown
       onChange(rawVal);
       setIsOpen(false);
       return;
@@ -146,24 +246,29 @@ export default function ComboboxField({
       const newOpt = await createOption(type, rawVal);
       const createdValue = newOpt?.value || rawVal;
 
-      // Update options list locally immediately
       setOptions((prev) => {
-        const exists = prev.some((o) => o.normalizedValue === newOpt.normalizedValue);
+        const exists = prev.some((o) => (o.normalizedValue || o.value?.trim().toLowerCase()) === (newOpt?.normalizedValue || createdValue.toLowerCase()));
         if (exists) return prev;
-        return [...prev, newOpt].sort((a, b) => a.value.localeCompare(b.value));
+        return [...prev, newOpt || { type, value: createdValue, normalizedValue: createdValue.toLowerCase() }].sort((a, b) => a.value.localeCompare(b.value));
       });
 
-      // Instantly set as selected value
       onChange(createdValue);
       setIsOpen(false);
     } catch (err) {
       console.error('[ComboboxField] Create option error:', err);
+      setOptions((prev) => {
+        const exists = prev.some((o) => (o.normalizedValue || o.value?.trim().toLowerCase()) === norm);
+        if (exists) return prev;
+        return [...prev, { type, value: rawVal, normalizedValue: norm }].sort((a, b) => a.value.localeCompare(b.value));
+      });
+      onChange(rawVal);
+      setIsOpen(false);
     } finally {
       setIsCreating(false);
     }
   };
 
-  // Keyboard navigation
+  // Keyboard Navigation
   const handleKeyDown = (e) => {
     if (!isOpen) {
       if (e.key === 'ArrowDown' || e.key === 'Enter') {
@@ -182,7 +287,7 @@ export default function ComboboxField({
       e.preventDefault();
       setHighlightedIndex((prev) => (prev - 1 >= 0 ? prev - 1 : totalItems - 1));
     } else if (e.key === 'Enter') {
-      e.preventDefault();
+      e.preventDefault(); // Prevent form submission
       if (highlightedIndex >= 0 && highlightedIndex < filteredOptions.length) {
         handleSelectOption(filteredOptions[highlightedIndex].value);
       } else if (allowCreate && !exactMatchExists && searchQuery.trim()) {
@@ -190,6 +295,8 @@ export default function ComboboxField({
       }
     } else if (e.key === 'Escape') {
       e.preventDefault();
+      setIsOpen(false);
+    } else if (e.key === 'Tab') {
       setIsOpen(false);
     }
   };
@@ -209,6 +316,9 @@ export default function ComboboxField({
         tabIndex={0}
         role="combobox"
         aria-expanded={isOpen}
+        aria-haspopup="listbox"
+        aria-controls={listboxId}
+        aria-label={label || placeholder}
         className={cn(
           "w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-all focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 outline-none select-none",
           isOpen && "border-blue-600 ring-2 ring-blue-600/10"
@@ -226,7 +336,7 @@ export default function ComboboxField({
                 e.stopPropagation();
                 onChange('');
               }}
-              className="p-0.5 hover:text-slate-600 rounded transition-colors"
+              className="p-0.5 hover:text-slate-600 rounded transition-colors cursor-pointer"
               title="Clear selection"
             >
               <X size={12} />
@@ -249,23 +359,34 @@ export default function ComboboxField({
                 value={searchQuery}
                 onChange={handleSearchInputChange}
                 onKeyDown={handleKeyDown}
-                placeholder="Search options... (remote query in 7s)"
+                placeholder="Cari atau filter opsi..."
+                role="searchbox"
+                aria-autocomplete="list"
                 className="w-full pl-8 pr-7 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-600 outline-none font-sans"
               />
               {isLoading && (
                 <Loader2 size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 animate-spin text-blue-600" />
               )}
             </div>
-            <span className="text-[9px] font-mono text-slate-400 px-1 pt-1 block">
-              7s Remote Sync Active • Direct local filter
-            </span>
+            <div className="flex items-center justify-between text-[9px] font-mono text-slate-400 px-1 pt-1">
+              <span>Filter lokal instan</span>
+              {fetchError ? (
+                <span className="text-amber-600 font-semibold">{fetchError}</span>
+              ) : (
+                <span>350ms Debounced Remote</span>
+              )}
+            </div>
           </div>
 
           {/* Options List */}
-          <div className="max-h-56 overflow-y-auto p-1 divide-y divide-slate-50">
+          <div
+            id={listboxId}
+            role="listbox"
+            className="max-h-56 overflow-y-auto p-1 divide-y divide-slate-50"
+          >
             {filteredOptions.length === 0 && exactMatchExists ? (
               <div className="py-6 text-center text-xs text-slate-400 font-mono">
-                Tidak ada option ditemukan.
+                Tidak ada opsi ditemukan.
               </div>
             ) : (
               filteredOptions.map((opt, idx) => {
@@ -274,7 +395,9 @@ export default function ComboboxField({
 
                 return (
                   <div
-                    key={opt.normalizedValue || idx}
+                    key={opt.normalizedValue || `${opt.value}-${idx}`}
+                    role="option"
+                    aria-selected={isSelected}
                     onClick={() => handleSelectOption(opt.value)}
                     onMouseEnter={() => setHighlightedIndex(idx)}
                     className={cn(
@@ -294,6 +417,7 @@ export default function ComboboxField({
             {/* Option Creation Action: + Tambah "<query>" */}
             {allowCreate && !exactMatchExists && searchQuery.trim() && (
               <div
+                role="button"
                 onClick={handleCreateNewOption}
                 onMouseEnter={() => setHighlightedIndex(filteredOptions.length)}
                 className={cn(
@@ -310,7 +434,7 @@ export default function ComboboxField({
                   <span className="truncate">Tambah "{searchQuery.trim()}"</span>
                 </div>
                 <span className="font-mono text-[9px] uppercase px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-bold shrink-0">
-                  {createOnSelect ? 'Save to MongoDB' : 'Di-upsert saat Simpan'}
+                  {createOnSelect ? 'Simpan ke Database' : 'Di-upsert saat Simpan'}
                 </span>
               </div>
             )}

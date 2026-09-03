@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight, ImageOff } from 'lucide-react';
 import { CornerPhotoWatermark } from './WatermarkOverlay';
+import PercentLoader from './common/PercentLoader';
+import AsyncImage from './common/AsyncImage';
 import { useSound } from '../context/SoundContext';
 import { cn } from '../lib/utils';
 
@@ -187,18 +189,15 @@ export default function MediaGallery({
           </div>
         ) : (
           <AnimatePresence mode="wait">
-            <motion.img
+            <AsyncImage
               key={currentMedia.src}
               src={currentMedia.src}
               alt={currentMedia.alt || `${title} - Foto ${currentNumStr}`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
+              containerClassName="max-w-full max-h-[52vh] md:max-h-[58vh] w-auto h-auto border-0 bg-transparent"
               className="max-w-full max-h-[52vh] md:max-h-[58vh] w-auto h-auto object-contain rounded select-none pointer-events-none"
               draggable={false}
-              loading="eager"
-              onError={() => handleImageError(safeIndex)}
+              showPercentLoader={true}
+              loadingText="Memuat media..."
             />
           </AnimatePresence>
         )}

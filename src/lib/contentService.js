@@ -57,19 +57,22 @@ export async function checkHealth() {
 }
 
 // ── TAXONOMY OPTIONS API ─────────────────────────────────────────
-export async function getOptions(type, search = '') {
+export async function getOptions(type, search = '', signal = null) {
   try {
     const params = new URLSearchParams({ type });
     if (search && search.trim()) {
       params.append('search', search.trim());
     }
-    const res = await fetch(`/api/options?${params.toString()}`);
+    const res = await fetch(`/api/options?${params.toString()}`, { signal: signal || undefined });
     const json = await res.json();
     if (!json.success) {
       throw new Error(json.error || 'Gagal mengambil data options.');
     }
     return json.data || [];
   } catch (err) {
+    if (err.name === 'AbortError') {
+      return null; // Silent cancellation for in-flight requests
+    }
     console.error('[contentService.getOptions] Error:', err);
     return [];
   }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { SoundProvider } from './context/SoundContext';
 import CustomCursor from './components/CustomCursor';
 import ScanlineOverlay from './components/ScanlineOverlay';
@@ -11,6 +12,8 @@ import WorkGrid from './components/WorkGrid';
 import ScriptPreviewSection from './components/ScriptPreviewSection';
 import DocumentationSection from './components/DocumentationSection';
 import Contact from './components/Contact';
+import SplashLoader from './components/SplashLoader';
+import PercentLoader from './components/common/PercentLoader';
 
 // CMS Imports
 import PinGate from './components/manage/PinGate';
@@ -31,6 +34,9 @@ export default function App() {
   const [cmsTab, setCmsTab] = useState('dashboard');
   const [openNewWorkTrigger, setOpenNewWorkTrigger] = useState(0);
   const [openNewDocTrigger, setOpenNewDocTrigger] = useState(0);
+  const [showSplash, setShowSplash] = useState(true);
+  const [isNavigating, setIsNavigating] = useState(false);
+  const [navProgress, setNavProgress] = useState(0);
 
   const checkServerAuth = async () => {
     const auth = await isAuthenticatedAsync();
@@ -48,9 +54,16 @@ export default function App() {
   }, []);
 
   const navigateTo = (path) => {
-    window.history.pushState({}, '', path);
-    setPathname(path);
-    checkServerAuth();
+    setIsNavigating(true);
+    setNavProgress(25);
+    const timer1 = setTimeout(() => setNavProgress(70), 100);
+    const timer2 = setTimeout(() => {
+      setNavProgress(100);
+      window.history.pushState({}, '', path);
+      setPathname(path);
+      checkServerAuth();
+      setTimeout(() => setIsNavigating(false), 200);
+    }, 250);
   };
 
   const isManageRoute = pathname.startsWith('/manage');
@@ -69,12 +82,35 @@ export default function App() {
     return (
       <ManageLayout
         activeTab={cmsTab}
-        onNavigate={(tabId) => setCmsTab(tabId)}
+        onNavigate={(tabId) => {
+          setIsNavigating(true);
+          setNavProgress(30);
+          setTimeout(() => setNavProgress(80), 80);
+          setTimeout(() => {
+            setCmsTab(tabId);
+            setNavProgress(100);
+            setTimeout(() => setIsNavigating(false), 150);
+          }, 200);
+        }}
         onLogout={() => {
           setIsAuth(false);
           navigateTo('/');
         }}
       >
+        {/* Compact Route Navigation Loader */}
+        {isNavigating && (
+          <div className="fixed top-0 left-0 right-0 z-50 px-4 py-2 bg-slate-900/90 text-white backdrop-blur-sm border-b border-slate-700 shadow-md">
+            <PercentLoader
+              variant="percent"
+              label="Percent"
+              value={navProgress}
+              subtext="Loading route..."
+              size="inline"
+              showBar={true}
+            />
+          </div>
+        )}
+
         {cmsTab === 'dashboard' && (
           <ManageDashboard
             onNavigate={(tabId) => setCmsTab(tabId)}
@@ -106,7 +142,19 @@ export default function App() {
   // Public Website View
   return (
     <SoundProvider>
-      <div className="min-h-screen bg-navy-base font-body text-ivory">
+      {/* Initial App Boot Splash Loader */}
+      {showSplash && (
+        <SplashLoader
+          onComplete={() => setShowSplash(false)}
+        />
+      )}
+
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: showSplash ? 0 : 1, y: showSplash ? 8 : 0 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="min-h-screen bg-navy-base font-body text-ivory relative"
+      >
         <CustomCursor />
         <ScanlineOverlay />
         
@@ -123,7 +171,7 @@ export default function App() {
         </main>
         
         <Contact />
-      </div>
+      </motion.div>
     </SoundProvider>
   );
 }

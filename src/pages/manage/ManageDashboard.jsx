@@ -385,7 +385,7 @@ export default function ManageDashboard({ onNavigate, onOpenNewWork, onOpenNewDo
               <span>Reseed Database MongoDB PortoZeze?</span>
             </div>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Tindakan ini akan mengosongkan collection pada database MongoDB dan mere-seed data dari file source <code className="text-blue-600">src/data/*.js</code>.
+              Tindakan ini akan mengembalikan konfigurasi dasar (kategori & filter) ke database MongoDB.
             </p>
             <div className="flex justify-end gap-2 pt-2">
               <button

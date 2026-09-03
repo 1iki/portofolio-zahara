@@ -1,13 +1,12 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { experienceCategories } from '../data/experienceCategories';
 
 /**
  * ExperienceSection — Renders a dynamically sorted experience category group section.
  * Includes section number (01, 02, ...), title, subtitle, divider, and items.
  */
 export default function ExperienceSection({ number, type, categoryConfig, children }) {
-  const config = categoryConfig || experienceCategories[type] || {
+  const config = categoryConfig || {
     label: (type || 'Pengalaman').replace(/[-_]/g, ' ').toUpperCase(),
     subtitle: 'Pengalaman & Rekam Jejak',
   };

@@ -1,9 +1,9 @@
 import express from 'express';
-import { 
-  checkDatabaseHealth, 
-  getWorksCollection, 
-  getDocumentationCollection, 
-  getScriptsCollection, 
+import {
+  checkDatabaseHealth,
+  getWorksCollection,
+  getDocumentationCollection,
+  getScriptsCollection,
   getExperienceCollection,
   getEducationCollection,
   getContactCollection,
@@ -12,29 +12,24 @@ import {
   getExperienceCategoriesCollection,
   getRoleFiltersCollection
 } from './lib/db.js';
-import { 
-  verifyPinServer, 
-  createSessionToken, 
-  verifySessionToken, 
-  requireAuth 
+import {
+  verifyPinServer,
+  createSessionToken,
+  verifySessionToken,
+  requireAuth
 } from './lib/auth.js';
-import { 
+import {
   uploadImageToCloudinary,
   uploadPdfToCloudinary,
   deletePdfFromCloudinary
 } from './lib/cloudinary.js';
 import { normalizeScriptPayload } from './lib/scriptSchema.js';
-
-// Static seed fallbacks if database is initially unseeded
-import { works as seedWorks } from '../src/data/works.js';
-import { documentations as seedDocs } from '../src/data/documentation.js';
-import { scripts as seedScripts } from '../src/data/scripts.js';
-import { experience as seedExp } from '../src/data/experience.js';
-import { education as seedEdu } from '../src/data/education.js';
-import { contact as seedContact } from '../src/data/contact.js';
-import { workCategories as seedWorkCat } from '../src/data/workCategories.js';
-import { experienceCategories as seedExpCat } from '../src/data/experienceCategories.js';
-import { roleFilters as seedRoleFilters } from '../src/data/roleFilters.js';
+import {
+  defaultWorkCategories,
+  defaultExpCategories,
+  defaultRoleFilters,
+  defaultContact
+} from './lib/defaults.js';
 
 const app = express();
 
@@ -135,14 +130,10 @@ app.get('/works', async (req, res) => {
   try {
     const col = await getWorksCollection();
     const items = await col.find({}, { projection: { _id: 0 } }).sort({ endDate: -1 }).toArray();
-
-    if (items.length === 0) {
-      return res.json({ success: true, data: seedWorks, isSeed: true });
-    }
-    return res.json({ success: true, data: items, isSeed: false });
+    return res.json({ success: true, data: items });
   } catch (err) {
     console.error('[API /works] GET error:', err);
-    return res.json({ success: true, data: seedWorks, fallback: true, error: err.message });
+    return res.json({ success: true, data: [], fallback: true, error: err.message });
   }
 });
 
@@ -231,13 +222,10 @@ app.get('/documentation', async (req, res) => {
   try {
     const col = await getDocumentationCollection();
     const items = await col.find({}, { projection: { _id: 0 } }).toArray();
-    if (items.length === 0) {
-      return res.json({ success: true, data: seedDocs, isSeed: true });
-    }
-    return res.json({ success: true, data: items, isSeed: false });
+    return res.json({ success: true, data: items });
   } catch (err) {
     console.error('[API /documentation] GET error:', err);
-    return res.json({ success: true, data: seedDocs, fallback: true, error: err.message });
+    return res.json({ success: true, data: [], fallback: true, error: err.message });
   }
 });
 
@@ -326,9 +314,9 @@ app.get('/scripts', async (req, res) => {
   try {
     const col = await getScriptsCollection();
     const items = await col.find({}, { projection: { _id: 0 } }).toArray();
-    return res.json({ success: true, data: items.length > 0 ? items : seedScripts });
+    return res.json({ success: true, data: items });
   } catch (err) {
-    return res.json({ success: true, data: seedScripts, fallback: true });
+    return res.json({ success: true, data: [], fallback: true });
   }
 });
 
@@ -355,7 +343,7 @@ app.post('/scripts', requireAuth, async (req, res) => {
     }
     const document = { ...data, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
     try { await col.insertOne(document); } catch (error) {
-      if (document.pdfPublicId) await deletePdfFromCloudinary(document.pdfPublicId).catch(() => {});
+      if (document.pdfPublicId) await deletePdfFromCloudinary(document.pdfPublicId).catch(() => { });
       throw error;
     }
     delete document._id;
@@ -413,9 +401,9 @@ app.get('/experience', async (req, res) => {
   try {
     const col = await getExperienceCollection();
     const items = await col.find({}, { projection: { _id: 0 } }).toArray();
-    return res.json({ success: true, data: items.length > 0 ? items : seedExp });
+    return res.json({ success: true, data: items });
   } catch (err) {
-    return res.json({ success: true, data: seedExp, fallback: true });
+    return res.json({ success: true, data: [], fallback: true });
   }
 });
 
@@ -487,15 +475,9 @@ app.get('/education', async (req, res) => {
   try {
     const col = await getEducationCollection();
     const items = await col.find({}, { projection: { _id: 0 } }).toArray();
-    if (items.length === 0) {
-      // Generate IDs for seed data that doesn't have them
-      const seeded = seedEdu.map((e, i) => ({ ...e, id: e.id || `edu-${i}` }));
-      return res.json({ success: true, data: seeded, isSeed: true });
-    }
-    return res.json({ success: true, data: items, isSeed: false });
+    return res.json({ success: true, data: items });
   } catch (err) {
-    const seeded = seedEdu.map((e, i) => ({ ...e, id: e.id || `edu-${i}` }));
-    return res.json({ success: true, data: seeded, fallback: true });
+    return res.json({ success: true, data: [], fallback: true });
   }
 });
 
@@ -563,13 +545,7 @@ app.delete('/education/:id', requireAuth, async (req, res) => {
 });
 
 // ── 5.4 WORK CATEGORIES CRUD ──────────────────────────────────────
-const defaultWorkCategories = Object.entries(seedWorkCat).map(([id, val], idx) => ({
-  id,
-  label: val.label,
-  subtitle: val.subtitle,
-  order: idx + 1,
-}));
-
+// ── 5.4 WORK CATEGORIES CRUD ──────────────────────────────────────
 app.get('/work-categories', async (req, res) => {
   try {
     const col = await getWorkCategoriesCollection();
@@ -631,13 +607,6 @@ app.delete('/work-categories/:id', requireAuth, async (req, res) => {
 });
 
 // ── 5.5 EXPERIENCE CATEGORIES CRUD ───────────────────────────────
-const defaultExpCategories = Object.entries(seedExpCat).map(([id, val], idx) => ({
-  id,
-  label: val.label,
-  subtitle: val.subtitle,
-  order: idx + 1,
-}));
-
 app.get('/experience-categories', async (req, res) => {
   try {
     const col = await getExperienceCategoriesCollection();
@@ -699,11 +668,6 @@ app.delete('/experience-categories/:id', requireAuth, async (req, res) => {
 });
 
 // ── 5.6 ROLE FILTERS CRUD ─────────────────────────────────────────
-const defaultRoleFilters = seedRoleFilters.map((rf, idx) => ({
-  ...rf,
-  order: idx + 1,
-}));
-
 app.get('/role-filters', async (req, res) => {
   try {
     const col = await getRoleFiltersCollection();
@@ -763,13 +727,14 @@ app.delete('/role-filters/:id', requireAuth, async (req, res) => {
     return res.status(500).json({ success: false, error: err.message });
   }
 });
+
 app.get('/contact', async (req, res) => {
   try {
     const col = await getContactCollection();
     const item = await col.findOne({ _type: 'contact' }, { projection: { _id: 0, _type: 0 } });
-    return res.json({ success: true, data: item || seedContact });
+    return res.json({ success: true, data: item || defaultContact });
   } catch (err) {
-    return res.json({ success: true, data: seedContact, fallback: true });
+    return res.json({ success: true, data: defaultContact, fallback: true });
   }
 });
 
@@ -910,53 +875,15 @@ function validatePdfDataUrl(file) {
 // ── 7. SEED DATA MIGRATION ────────────────────────────────────────
 app.post('/migrate', requireAuth, async (req, res) => {
   try {
-    const worksCol = await getWorksCollection();
-    const docsCol = await getDocumentationCollection();
-    const scriptsCol = await getScriptsCollection();
-    const expCol = await getExperienceCollection();
-    const eduCol = await getEducationCollection();
     const contactCol = await getContactCollection();
     const workCatCol = await getWorkCategoriesCollection();
     const expCatCol = await getExperienceCategoriesCollection();
     const roleFiltersCol = await getRoleFiltersCollection();
 
-    let worksMigrated = 0;
-    for (const w of seedWorks) {
-      await worksCol.updateOne({ id: w.id }, { $set: w }, { upsert: true });
-      worksMigrated++;
-    }
-
-    let docsMigrated = 0;
-    for (const d of seedDocs) {
-      await docsCol.updateOne({ id: d.id }, { $set: d }, { upsert: true });
-      docsMigrated++;
-    }
-
-    let scriptsMigrated = 0;
-    for (const s of seedScripts) {
-      await scriptsCol.updateOne({ id: s.id }, { $set: s }, { upsert: true });
-      scriptsMigrated++;
-    }
-
-    let expMigrated = 0;
-    for (const e of seedExp) {
-      await expCol.updateOne({ id: e.id }, { $set: e }, { upsert: true });
-      expMigrated++;
-    }
-
-    // Education seed — generate deterministic IDs since source has none
-    const eduIds = ['edu-polimedia', 'edu-smk67'];
-    let eduMigrated = 0;
-    for (let i = 0; i < seedEdu.length; i++) {
-      const eduDoc = { ...seedEdu[i], id: eduIds[i] || `edu-${i}` };
-      await eduCol.updateOne({ id: eduDoc.id }, { $set: eduDoc }, { upsert: true });
-      eduMigrated++;
-    }
-
     // Contact singleton seed
     await contactCol.replaceOne(
       { _type: 'contact' },
-      { ...seedContact, _type: 'contact', updatedAt: new Date().toISOString() },
+      { ...defaultContact, _type: 'contact', updatedAt: new Date().toISOString() },
       { upsert: true }
     );
 
@@ -981,13 +908,8 @@ app.post('/migrate', requireAuth, async (req, res) => {
 
     return res.json({
       success: true,
-      message: 'Migrasi dataset & konfigurasi ke MongoDB berhasil.',
+      message: 'Reseed konfigurasi default ke MongoDB berhasil.',
       counts: {
-        works: worksMigrated,
-        docs: docsMigrated,
-        scripts: scriptsMigrated,
-        experience: expMigrated,
-        education: eduMigrated,
         contact: 1,
         work_categories: workCatMigrated,
         experience_categories: expCatMigrated,
@@ -995,7 +917,7 @@ app.post('/migrate', requireAuth, async (req, res) => {
       },
     });
   } catch (err) {
-    return res.status(500).json({ success: false, error: `Gagal migrasi: ${err.message}` });
+    return res.status(500).json({ success: false, error: `Gagal reseed: ${err.message}` });
   }
 });
 

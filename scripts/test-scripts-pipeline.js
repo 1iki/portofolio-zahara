@@ -1,6 +1,12 @@
 import fs from 'fs';
 import path from 'path';
-import { scripts as seedScripts } from '../src/data/scripts.js';
+
+const seedScripts = [
+  { id: 's1', title: 'T1', program: 'P1', episode: 'E1', category: 'comedy', role: 'R1', date: '2024', organization: 'O1', previewPageCount: 5, description: 'D1', thumbnailUrl: '/t.png', previewImageUrl: '/p.png', format: 'f1', tags: ['t1'] },
+  { id: 's2', title: 'T2', program: 'P2', episode: 'E2', category: 'variety', role: 'R2', date: '2024', organization: 'O2', previewPageCount: 5, description: 'D2', thumbnailUrl: '/t.png', previewImageUrl: '/p.png', format: 'f2', tags: ['t2'] },
+  { id: 's3', title: 'T3', program: 'P3', episode: 'E3', category: 'news', role: 'R3', date: '2024', organization: 'O3', previewPageCount: 5, description: 'D3', thumbnailUrl: '/t.png', previewImageUrl: '/p.png', format: 'f3', tags: ['t3'] },
+  { id: 's4', title: 'T4', program: 'P4', episode: 'E4', category: 'comedy', role: 'R4', date: '2024', organization: 'O4', previewPageCount: 5, description: 'D4', thumbnailUrl: '/t.png', previewImageUrl: '/p.png', format: 'f4', tags: ['t4'] },
+];
 
 console.log('====================================================');
 console.log('CMS NASKAH + PDF CLOUDINARY UPLOAD PIPELINE VERIFIER');

@@ -12,10 +12,10 @@ export default function Navbar() {
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
-      
+
       const sections = ['home', 'tentang', 'pengalaman', 'karya', 'naskah', 'dokumentasi', 'kontak'];
       let current = 'home';
-      
+
       for (const section of sections) {
         const el = document.getElementById(section);
         if (el && window.scrollY >= el.offsetTop - 200) {
@@ -46,15 +46,15 @@ export default function Navbar() {
   ];
 
   return (
-    <header 
+    <header
       className={cn(
         "fixed top-0 left-0 right-0 z-40 transition-all duration-500 border-b border-transparent",
         scrolled ? "bg-navy-base/95 backdrop-blur-xl border-divider py-3 shadow-lg shadow-navy-deep/50" : "bg-transparent py-5"
       )}
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-        
-        <button 
+
+        <button
           onClick={() => handleNavClick('home')}
           className="flex items-center gap-2 group cursor-pointer"
         >
@@ -84,21 +84,21 @@ export default function Navbar() {
 
         {/* Right Controls */}
         <div className="flex items-center gap-3">
-          <button 
+          <button
             onClick={() => { playClick(); setIsMuted(!isMuted); }}
             className="flex items-center justify-center w-8 h-8 rounded-full border border-divider hover:border-blue-accent/50 text-muted hover:text-ivory transition-colors cursor-pointer"
             aria-label={isMuted ? "Unmute sound" : "Mute sound"}
           >
             {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
           </button>
-          
+
           <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full border border-divider bg-navy-deep">
             <div className="w-2 h-2 rounded-full bg-divider"></div>
             <span className="text-[10px] font-mono tracking-widest text-muted">IDLE</span>
           </div>
 
           {/* Mobile menu toggle */}
-          <button 
+          <button
             onClick={() => { playClick(); setMobileOpen(!mobileOpen); }}
             className="md:hidden flex items-center justify-center w-8 h-8 rounded-full border border-divider hover:border-blue-accent/50 text-muted hover:text-ivory transition-colors cursor-pointer"
             aria-label={mobileOpen ? "Close menu" : "Open menu"}

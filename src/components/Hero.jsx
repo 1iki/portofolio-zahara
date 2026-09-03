@@ -4,6 +4,7 @@ import { useReducedMotion } from '../hooks/useReducedMotion';
 import { useSound } from '../context/SoundContext';
 import { getContact, subscribeToDataChanges } from '../lib/contentService';
 import { ChevronDown, RefreshCw, Radio, Tv, Mic2, PenTool } from 'lucide-react';
+import AsyncImage from './common/AsyncImage';
 
 export default function Hero() {
   const prefersReducedMotion = useReducedMotion();
@@ -282,21 +283,14 @@ export default function Hero() {
               {/* Diagonal pattern fallback */}
               <div className="absolute inset-0 opacity-10" style={{ background: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(245, 243, 236, 0.05) 10px, rgba(245, 243, 236, 0.05) 20px)' }}></div>
 
-              <img
+              <AsyncImage
                 src="/profile-zahara.png"
                 alt="Zahara Elhusna Barok"
+                containerClassName="absolute inset-0 w-full h-full border-0 bg-transparent"
                 className="object-cover w-full h-full object-top opacity-90 group-hover:opacity-100 transition-all duration-700"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.nextSibling.style.display = 'flex';
-                }}
+                showPercentLoader={true}
+                loadingText="Memuat foto..."
               />
-              {/* Displayed if image fails to load */}
-              <div className="hidden absolute inset-0 flex-col items-center justify-center text-muted gap-2">
-                <Tv size={32} className="opacity-30" />
-                <span className="font-mono text-xs tracking-widest">[NO SIGNAL]</span>
-                <span className="text-[10px] font-mono">Insert profile photo</span>
-              </div>
 
               {/* Cinematic gradient overlay on image */}
               <div className="absolute inset-0 bg-gradient-to-t from-navy-deep via-transparent to-navy-deep/30 pointer-events-none"></div>

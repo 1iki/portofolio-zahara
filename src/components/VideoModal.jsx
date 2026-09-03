@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Tv, ExternalLink } from 'lucide-react';
+import AsyncEmbed from './common/AsyncEmbed';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { useSound } from '../context/SoundContext';
 
@@ -39,6 +40,11 @@ export default function VideoModal({ work, onClose }) {
   const isTikTok = work.mediaType === 'tiktok' || work.videoUrl?.includes('tiktok.com');
 
   const targetLink = work.externalUrl || work.link || work.videoUrl;
+  const embedUrl = isYouTube && work.videoUrl
+    ? (work.videoUrl.includes('autoplay=1') ? work.videoUrl : `${work.videoUrl}${work.videoUrl.includes('?') ? '&' : '?'}autoplay=1`)
+    : work.videoUrl;
+
+  const modalAspectRatio = isDrive && work.aspectRatio === 'portrait' ? '9 / 16' : '16 / 9';
 
   return (
     <AnimatePresence>
@@ -110,27 +116,18 @@ export default function VideoModal({ work, onClose }) {
             </div>
           </div>
 
-          {/* Video Iframe Container */}
-          <div className={`relative ${isDrive && work.aspectRatio === 'portrait' ? 'aspect-[9/16]' : 'aspect-video'} w-full bg-ink flex items-center justify-center`}>
-            {isYouTube && work.videoUrl ? (
-              <iframe
-                src={work.videoUrl.includes('autoplay=1') ? work.videoUrl : `${work.videoUrl}${work.videoUrl.includes('?') ? '&' : '?'}autoplay=1`}
+          {/* Video Embed Area */}
+          <div className="w-full bg-ink">
+            {embedUrl ? (
+              <AsyncEmbed
+                src={embedUrl}
                 title={work.title}
-                className="absolute inset-0 w-full h-full border-0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-              />
-            ) : isDrive && work.videoUrl ? (
-              <iframe
-                src={work.videoUrl}
-                title={work.title}
-                className="absolute inset-0 w-full h-full border-0"
-                allow="autoplay"
-                allowFullScreen
+                aspectRatio={modalAspectRatio}
+                subtext={`Loading ${isYouTube ? 'YouTube Stream' : isDrive ? 'Drive Preview' : 'Media Embed'}...`}
               />
             ) : (
               /* Fallback for TikTok or non-iframe media */
-              <div className="flex flex-col items-center justify-center gap-4 p-8 text-center bg-navy-deep/80 w-full h-full">
+              <div className="flex flex-col items-center justify-center gap-4 p-8 text-center bg-navy-deep/80 w-full h-full min-h-[300px]">
                 {work.thumbnail && (
                   <img src={work.thumbnail} alt={work.title} className="max-h-48 object-contain rounded-sm border border-divider" />
                 )}
