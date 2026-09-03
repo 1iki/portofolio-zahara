@@ -235,7 +235,7 @@ export default function ScriptPreviewSection() {
                   <div className="absolute bottom-2 left-2 z-10">
                     <span className="px-2 py-0.5 rounded-sm bg-navy-base/90 border border-divider text-[9px] font-mono tracking-wider text-ivory/80 backdrop-blur-sm flex items-center gap-1">
                       <Lock size={9} className="text-amber-400" />
-                      {script.previewPageCount}
+                      {script.previewPageCount || `${script.previewPercentage ?? 100}% Preview`}
                     </span>
                   </div>
                 </div>

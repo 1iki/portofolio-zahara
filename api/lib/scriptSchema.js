@@ -2,7 +2,7 @@
 // are intentionally listed rather than accepting arbitrary client payloads.
 export const SCRIPT_BASELINE_FIELDS = [
   'id', 'title', 'program', 'episode', 'category', 'role', 'date',
-  'organization', 'previewPageCount', 'description', 'thumbnailUrl',
+  'organization', 'previewPageCount', 'previewPercentage', 'description', 'thumbnailUrl',
   'previewImageUrl', 'format', 'tags',
 ];
 
@@ -30,7 +30,7 @@ export function normalizeScriptPayload(input, { id } = {}) {
   output.id = id || input.id;
 
   for (const field of SCRIPT_BASELINE_FIELDS) {
-    if (!(field in output)) output[field] = field === 'tags' ? [] : null;
+    if (!(field in output)) output[field] = field === 'tags' ? [] : (field === 'previewPercentage' ? 100 : null);
   }
 
   if (typeof output.id !== 'string' || !output.id.trim()) throw new Error('ID naskah wajib berupa string.');
@@ -49,6 +49,17 @@ export function normalizeScriptPayload(input, { id } = {}) {
   output.tags = output.tags.map((tag) => tag.trim()).filter(Boolean);
   if ('pageCount' in output && output.pageCount !== null && (!Number.isInteger(output.pageCount) || output.pageCount < 1)) {
     throw new Error('pageCount harus berupa bilangan bulat positif atau null.');
+  }
+
+  // previewPercentage: integer 1–100, default 100 for backward compatibility
+  if (output.previewPercentage === null || output.previewPercentage === undefined) {
+    output.previewPercentage = 100;
+  } else {
+    const pct = Number(output.previewPercentage);
+    if (!Number.isFinite(pct) || !Number.isInteger(pct) || pct < 1 || pct > 100) {
+      throw new Error('previewPercentage harus berupa bilangan bulat antara 1 dan 100.');
+    }
+    output.previewPercentage = pct;
   }
 
   // pdfFileName is canonical; retain originalFilename for legacy consumers.

@@ -24,7 +24,7 @@ export function TiledScriptWatermark({
           font-family: 'Courier New', Courier, monospace;
           font-size: 11px;
           font-weight: 700;
-          fill: rgba(255, 255, 255, 0.40);
+          fill: rgba(0, 0, 0, 0.40);
           letter-spacing: 1.5px;
           text-transform: uppercase;
         }

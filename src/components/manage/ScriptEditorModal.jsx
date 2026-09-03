@@ -22,7 +22,8 @@ export default function ScriptEditorModal({ script = null, onClose, onSuccess })
     role: script?.role || '',
     date: script?.date || '',
     organization: script?.organization || '',
-    previewPageCount: script?.previewPageCount || 'Halaman 1–3 dari 12 Halaman (25% Cuplikan)',
+    previewPercentage: script?.previewPercentage ?? 100,
+    previewPageCount: script?.previewPageCount || '',
     description: script?.description || '',
     thumbnailUrl: script?.thumbnailUrl || '/naskah/salah-pintu-ep01.png',
     previewImageUrl: script?.previewImageUrl || '/naskah/salah-pintu-ep01.png',
@@ -167,8 +168,20 @@ export default function ScriptEditorModal({ script = null, onClose, onSuccess })
       return;
     }
 
+    const pct = Number(formData.previewPercentage);
+    const safePct = (!Number.isFinite(pct) || pct < 1 || pct > 100) ? 100 : Math.round(pct);
+
+    // Auto-compute previewPageCount label from percentage + pageCount
+    let computedLabel = `${safePct}% Cuplikan`;
+    if (formData.pageCount && Number.isInteger(formData.pageCount) && formData.pageCount > 0) {
+      const previewPages = Math.max(1, Math.round(formData.pageCount * safePct / 100));
+      computedLabel = `Halaman 1\u2013${previewPages} dari ${formData.pageCount} Halaman (${safePct}% Cuplikan)`;
+    }
+
     const payload = {
       ...formData,
+      previewPercentage: safePct,
+      previewPageCount: computedLabel,
       tags: Array.isArray(formData.tags) ? formData.tags.filter((t) => t.trim()) : [],
       program: formData.program.trim() || null,
       episode: formData.episode.trim() || null,
@@ -392,14 +405,49 @@ export default function ScriptEditorModal({ script = null, onClose, onSuccess })
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block font-medium text-xs text-slate-700 mb-1">Cakupan Cuplikan (Page Scope)</label>
-                <input
-                  type="text"
-                  value={formData.previewPageCount}
-                  onChange={(e) => handleChange('previewPageCount', e.target.value)}
-                  placeholder="Halaman 1–3 dari 12 Halaman (25% Cuplikan)"
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:border-amber-600 outline-none"
-                />
+                <label className="block font-medium text-xs text-slate-700 mb-1">Persentase Preview Naskah</label>
+                <div className="flex items-center gap-2 mb-2">
+                  <input
+                    type="number"
+                    min={1}
+                    max={100}
+                    step={1}
+                    value={formData.previewPercentage}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      if (raw === '') { handleChange('previewPercentage', ''); return; }
+                      const num = parseInt(raw, 10);
+                      if (!isNaN(num)) handleChange('previewPercentage', Math.max(1, Math.min(100, num)));
+                    }}
+                    onBlur={() => {
+                      const num = Number(formData.previewPercentage);
+                      if (!Number.isFinite(num) || num < 1 || num > 100) handleChange('previewPercentage', 100);
+                    }}
+                    className="w-24 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:border-amber-600 outline-none font-mono text-center"
+                  />
+                  <span className="text-xs text-slate-500 font-medium">%</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {[25, 50, 75, 100].map((pct) => (
+                    <button
+                      key={pct}
+                      type="button"
+                      onClick={() => handleChange('previewPercentage', pct)}
+                      className={`px-3 py-1.5 rounded-lg text-[11px] font-semibold font-mono transition-all cursor-pointer border ${
+                        Number(formData.previewPercentage) === pct
+                          ? 'bg-amber-600 text-white border-amber-600 shadow-xs'
+                          : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-amber-400 hover:bg-amber-50'
+                      }`}
+                    >
+                      {pct}%
+                    </button>
+                  ))}
+                </div>
+                {formData.pageCount && Number(formData.pageCount) > 0 && (
+                  <p className="mt-2 text-[10px] font-mono text-slate-400">
+                    Preview: Halaman 1\u2013{Math.max(1, Math.round(Number(formData.pageCount) * (Number(formData.previewPercentage) || 100) / 100))} dari {formData.pageCount} halaman
+                  </p>
+                )}
               </div>
 
               <div>
